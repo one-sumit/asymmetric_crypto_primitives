@@ -67,6 +67,7 @@ public class THCLabSigningPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
     }
   }
 
+
   @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     if(call.method == "signEd25519"){
