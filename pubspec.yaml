@@ -1,7 +1,7 @@
 name: asymmetric_crypto_primitives
-description: A new Flutter project.
+description: A Flutter plugin for signing and managing keys on Android devices.
 version: 0.0.1
-homepage:
+homepage: https://github.com/THCLab/asymmetric_crypto_primitives
 
 environment:
   sdk: ">=2.17.1 <3.0.0"
