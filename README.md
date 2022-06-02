@@ -45,7 +45,7 @@ await signer.rotateForEd25519();
 currentKey = await signer.getCurrentPubKey();  
 nextKey = await signer.getNextPubKey();
 ```
-**Warning** The rotation doesn't currently work for RSA algorithm. Work in progress.
+**Warning:** The rotation doesn't currently work for RSA algorithm. Work in progress.
 
 #### Getting the `signer`'s uique UUID
 ```dart
