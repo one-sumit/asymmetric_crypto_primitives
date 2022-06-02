@@ -214,15 +214,10 @@ class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, Activi
             load(null)
           }
           val privateKey = keyStore.getKey("${uuid}_1_rsa", null)
-          println("old privkey = $privateKey")
           val publicKey = if (privateKey != null) keyStore.getCertificate("${uuid}_1_rsa") else null
-          println("here passed")
           keyStore.setKeyEntry("${uuid}_0_rsa", privateKey,  null, arrayOf(publicKey))
-          println("here passed too")
           createNextRSAKey(uuid)
-          println("reached here")
           val privateKey2 = keyStore.getKey("${uuid}_1_rsa", null)
-          println("new privkey = $privateKey2")
           result.success(true)
         }catch (e: Exception){
           result.success(false)
@@ -303,7 +298,6 @@ class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, Activi
   fun writeData(key: String, data: String){
     try{
       val encryptedData = encrypt(data)
-      println(activity.callingPackage)
       val sharedPref = activity.getPreferences(Context.MODE_PRIVATE) ?: return
       with (sharedPref.edit()) {
         putString(key, encryptedData)
@@ -322,7 +316,6 @@ class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, Activi
     }else{
       val userData = decrypt(textToRead)
       if(userData != null){
-        println(userData)
         return userData
       }
       return false
@@ -472,11 +465,9 @@ class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, Activi
     var containsKey0 = keyStore.isKeyEntry("${uuid}_0_rsa")
     var containsKey1 = keyStore.isKeyEntry("${uuid}_1_rsa")
     if(containsKey0){
-      println("contains")
       keyStore.deleteEntry("${uuid}_0_rsa")
     }
     if(containsKey1){
-      println("contains")
       keyStore.deleteEntry("${uuid}_1_rsa")
     }
   }

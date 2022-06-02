@@ -1,5 +1,3 @@
-
-
 import 'package:asymmetric_crypto_primitives/rsa_signer.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
@@ -12,45 +10,59 @@ class AsymmetricCryptoPrimitives {
 
   ///Initializes the Ed25519 signer object, which will allow the user to generate keys,
   ///rotate them and delete them.
-  static Future<Ed25519Signer> establishForEd25519() async{
-    String uuid = const Uuid().v4().toString();
-    await _channel.invokeMethod('establishForEd25519', {'uuid' : uuid});
-    return Ed25519Signer(uuid);
-  }
-
-  ///Returns the Ed25519 signer object from given uuid
-  static Future<Ed25519Signer> getEd25519SignerFromUuid(String uuid) async{
-    var isCorrectUuid = await _channel.invokeMethod('checkUuid', {'uuid' : uuid});
-    if(isCorrectUuid){
+  static Future<Ed25519Signer> establishForEd25519() async {
+    var isDeviceSecure = await checkIfDeviceSecure();
+    if (isDeviceSecure) {
+      String uuid = const Uuid().v4().toString();
+      await _channel.invokeMethod('establishForEd25519', {'uuid': uuid});
       return Ed25519Signer(uuid);
-
-    }else{
-      throw IncorrectUuidException('There are no keys associated with this UUID saved on the device');
+    } else {
+      throw DeviceNotSecuredException(
+          'Secure lock on this device is not set up. Consider setting a pin or pattern.');
     }
   }
 
+  ///Returns the Ed25519 signer object from given uuid
+  static Future<Ed25519Signer> getEd25519SignerFromUuid(String uuid) async {
+    var isCorrectUuid =
+        await _channel.invokeMethod('checkUuid', {'uuid': uuid});
+    if (isCorrectUuid) {
+      return Ed25519Signer(uuid);
+    } else {
+      throw IncorrectUuidException(
+          'There are no keys associated with this UUID saved on the device');
+    }
+  }
 
   ///Returns the RSA signer object from given uuid
-  static Future<RSASigner> getRSASignerFromUuid(String uuid) async{
-    var isCorrectUuid = await _channel.invokeMethod('checkUuid', {'uuid' : uuid});
-    if(isCorrectUuid){
+  static Future<RSASigner> getRSASignerFromUuid(String uuid) async {
+    var isCorrectUuid =
+        await _channel.invokeMethod('checkUuid', {'uuid': uuid});
+    if (isCorrectUuid) {
       return RSASigner(uuid);
-    }else{
-      throw IncorrectUuidException('There are no keys associated with this UUID saved on the device');
+    } else {
+      throw IncorrectUuidException(
+          'There are no keys associated with this UUID saved on the device');
     }
   }
 
   ///Initializes the RSA signer object, which will allow the user to generate keys,
   ///rotate them and delete them.
-  static Future<RSASigner> establishForRSA() async{
-    String uuid = const Uuid().v4().toString();
-    await _channel.invokeMethod('establishForRSA', {'uuid' : uuid});
-    return RSASigner(uuid);
+  static Future<RSASigner> establishForRSA() async {
+    var isDeviceSecure = await checkIfDeviceSecure();
+    if (isDeviceSecure) {
+      String uuid = const Uuid().v4().toString();
+      await _channel.invokeMethod('establishForRSA', {'uuid': uuid});
+      return RSASigner(uuid);
+    } else {
+      throw DeviceNotSecuredException(
+          'Secure lock on this device is not set up. Consider setting a pin or pattern.');
+    }
   }
 
   ///Deletes the keys established by signer with particular uuid
-  static Future<void> cleanUp(dynamic signer) async{
-    await _channel.invokeMethod('cleanUp', {'uuid' : await signer.getUuid()});
+  static Future<void> cleanUp(dynamic signer) async {
+    await _channel.invokeMethod('cleanUp', {'uuid': await signer.getUuid()});
     signer = null;
   }
 
@@ -64,79 +76,55 @@ class AsymmetricCryptoPrimitives {
     }
   }
 
-
-
   /** SharedPref methods **/
 
   ///Writes provided data under provided key in shared preferences. Data is encrypted using AES.
-  ///Works only if the device has a secure screen lock set, otherwise throws an exception. Returns true if data is successfully saved.
+  ///Returns true if data is successfully saved.
   static Future<bool> writeData(String key, String data) async {
-    bool isDeviceSecure = await checkIfDeviceSecure();
-    if (isDeviceSecure) {
-      var result = await _channel
-          .invokeMethod('writeData', {'key': key, 'data': data});
-      if (result == true) {
-        return true;
-      } else {
-        throw SharedPreferencesException(
-            'Writing to shared preferences failed. Consider reopening or reinstalling the app.');
-      }
+    var result =
+        await _channel.invokeMethod('writeData', {'key': key, 'data': data});
+    if (result == true) {
+      return true;
+    } else {
+      throw SharedPreferencesException(
+          'Writing to shared preferences failed. Consider reopening or reinstalling the app.');
     }
-    throw DeviceNotSecuredException(
-        'Secure lock on this device is not set up. Consider setting a pin or pattern.');
   }
 
   ///Reads data saved under provided key from shared preferences.
-  ///Works only if the device has a secure screen lock set, otherwise throws an exception. Returns data if it is successfully read.
+  ///Returns data if it is successfully read.
   static Future<dynamic> readData(String key) async {
-    bool isDeviceSecure = await checkIfDeviceSecure();
-    if (isDeviceSecure) {
-      var data = await _channel.invokeMethod('readData', {'key': key});
-      if (data != false) {
-        return data.toString().substring(
-            data.toString().indexOf(':') + 1, data.toString().length);
-      } else {
-        throw NoKeyInStorageException(
-            'No such key found in phone storage. Consider saving it to storage before reading.');
-      }
+    var data = await _channel.invokeMethod('readData', {'key': key});
+    if (data != false) {
+      return data
+          .toString()
+          .substring(data.toString().indexOf(':') + 1, data.toString().length);
+    } else {
+      throw NoKeyInStorageException(
+          'No such key found in phone storage. Consider saving it to storage before reading.');
     }
-    throw DeviceNotSecuredException(
-        'Secure lock on this device is not set up. Consider setting a pin or pattern.');
   }
 
-  ///Deletes data saved under provided key from shared preferences.
-  ///Works only if the device has a secure screen lock set, otherwise throws an exception. Returns true if data is successfully deleted.
+  ///Deletes data saved under provided key from shared preferences. Returns true if data is successfully deleted.
   static Future<bool> deleteData(String key) async {
-    bool isDeviceSecure = await checkIfDeviceSecure();
-    if (isDeviceSecure) {
-      var result = await _channel.invokeMethod('deleteData', {'key': key});
-      if (result != false) {
-        return true;
-      } else {
-        throw SharedPreferencesException(
-            'Writing to shared preferences failed. Consider reopening or reinstalling the app.');
-      }
+    var result = await _channel.invokeMethod('deleteData', {'key': key});
+    if (result != false) {
+      return true;
+    } else {
+      throw SharedPreferencesException(
+          'Writing to shared preferences failed. Consider reopening or reinstalling the app.');
     }
-    throw DeviceNotSecuredException(
-        'Secure lock on this device is not set up. Consider setting a pin or pattern.');
   }
 
-  ///Edits data under provided key in shared preferences. Data is encrypted using AES.
-  ///Works only if the device has a secure screen lock set, otherwise throws an exception. Returns true if data is successfully saved.
+  ///Edits data under provided key in shared preferences. Data is encrypted using AES. Returns true if data is successfully saved.
   static Future<bool> editData(String key, String data) async {
-    bool isDeviceSecure = await checkIfDeviceSecure();
-    if (isDeviceSecure) {
-      var result = await _channel
-          .invokeMethod('editData', {'key': key, 'data': data});
-      if (result == true) {
-        return true;
-      } else {
-        throw SharedPreferencesException(
-            'Writing to shared preferences failed. Consider reopening or reinstalling the app.');
-      }
+    var result =
+        await _channel.invokeMethod('editData', {'key': key, 'data': data});
+    if (result == true) {
+      return true;
+    } else {
+      throw SharedPreferencesException(
+          'Writing to shared preferences failed. Consider reopening or reinstalling the app.');
     }
-    throw DeviceNotSecuredException(
-        'Secure lock on this device is not set up. Consider setting a pin or pattern.');
   }
-
 }

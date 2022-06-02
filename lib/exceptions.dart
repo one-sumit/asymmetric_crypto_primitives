@@ -1,4 +1,3 @@
-
 ///An exception thrown when there is no entry under such key in keystore.
 class NoKeyInStorageException implements Exception {
   ///The description for the exception.
