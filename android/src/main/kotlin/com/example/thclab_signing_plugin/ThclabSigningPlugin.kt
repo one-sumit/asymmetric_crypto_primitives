@@ -54,6 +54,10 @@ public class ThclabSigningPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
   private lateinit var pendingResult: Result
   private lateinit var signatureResult: String
   private lateinit var resultUuid : String
+  private lateinit var mode: String
+  private lateinit var EdMessage: String
+  private lateinit var EdPubKey: String
+  private lateinit var EdPrivKey: String
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "thclab_signing_plugin")
@@ -71,14 +75,30 @@ public class ThclabSigningPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
   @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     if(call.method == "signEd25519"){
+      mode = "Ed25519"
       val message = call.argument<String>("message")
       val uuid = call.argument<String>("uuid")
       var pub = readData("${uuid}_0_pub")
       var priv = readData("${uuid}_0_priv")
-      var kp = KeyPair(Key.fromBase64String(pub as String?), Key.fromBase64String(priv as String?))
-      var signature = message?.let { signEd25519(kp, it, lazySodium) }
-      result.success(signature)
+      if (message != null) {
+        EdMessage = message
+      }
+      EdPubKey = pub as String
+      EdPrivKey = priv as String
+      this.pendingResult = result
+      if (uuid != null) {
+        this.resultUuid = uuid
+      }
+      val intent: Intent? = keyguardManager.createConfirmDeviceCredentialIntent("Keystore Sign And Verify",
+        "In order to sign the data you need to confirm your identity. Please enter your pin/pattern or scan your fingerprint")
+      if (intent != null) {
+        activity.startActivityForResult(intent, REQUEST_CODE_FOR_CREDENTIALS)
+      }
+//      var kp = KeyPair(Key.fromBase64String(pub as String?), Key.fromBase64String(priv as String?))
+//      var signature = message?.let { signEd25519(kp, it, lazySodium) }
+//      result.success(signature)
     }else if(call.method == "signRSA"){
+      mode = "RSA"
       val uuid = call.argument<String>("uuid")
       if (uuid != null) {
         this.resultUuid = uuid
@@ -531,22 +551,34 @@ public class ThclabSigningPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
     if (requestCode == REQUEST_CODE_FOR_CREDENTIALS) {
       if (resultCode == Activity.RESULT_OK) {
-        val keyStore: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply {
-          load(null)
+        if(mode == "Ed25519"){
+          var kp = KeyPair(Key.fromBase64String(EdPubKey as String?), Key.fromBase64String(EdPrivKey as String?))
+          var signature = EdMessage?.let { signEd25519(kp, it, lazySodium) }
+          pendingResult.success(signature)
+          return true
+        }else if(mode == "RSA"){
+          val keyStore: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply {
+            load(null)
+          }
+          val privateKey: PrivateKey = keyStore.getKey("${resultUuid}_0_rsa", null) as PrivateKey
+          val signature: ByteArray? = Signature.getInstance("SHA256withRSA").run {
+            initSign(privateKey)
+            update(dataToSign.toByteArray())
+            sign()
+          }
+          if (signature != null) {
+            signatureResult = Base64.encodeToString(signature, Base64.DEFAULT)
+            dataSignature = signatureResult
+            val stringConcat = "$signatureResult:$dataToSign"
+            pendingResult.success(stringConcat)
+          }
+          return true
+        }else{
+          Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
+          pendingResult.success(false)
+          activity.finish()
+          return false
         }
-        val privateKey: PrivateKey = keyStore.getKey("${resultUuid}_0_rsa", null) as PrivateKey
-        val signature: ByteArray? = Signature.getInstance("SHA256withRSA").run {
-          initSign(privateKey)
-          update(dataToSign.toByteArray())
-          sign()
-        }
-        if (signature != null) {
-          signatureResult = Base64.encodeToString(signature, Base64.DEFAULT)
-          dataSignature = signatureResult
-          val stringConcat = "$signatureResult:$dataToSign"
-          pendingResult.success(stringConcat)
-        }
-        return true
       } else {
         Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
         pendingResult.success(false)
