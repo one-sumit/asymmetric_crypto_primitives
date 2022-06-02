@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 
 class Ed25519Signer{
-  static const MethodChannel _channel = MethodChannel('ed25519_signing_plugin');
+  static const MethodChannel _channel = MethodChannel('thclab_signing_plugin');
   String uuid;
 
   ///Constructor for Ed25519 signer.
