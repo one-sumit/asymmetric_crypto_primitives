@@ -1,5 +1,10 @@
 
-A plugin for signing data using RSA or Ed25519. Enables the user to rotate the keys and clean unused ones. The package is based on [simple signing plugin](https://pub.dev/packages/simple_signing_plugin).
+A plugin for signing data using RSA or Ed25519. Enables the user to rotate the keys and clean unused ones. It is based on [simple signing plugin](https://pub.dev/packages/simple_signing_plugin).
+
+## Features
+- Delivers EDDSA crypto primitive to Android, as it has no native support
+- Will allow in the future to deliver a next gen asymmetric crypto algo to an Android device if it will not have the native support for the algorithm
+- Allows the prerotation of keys as it generates 2 key pairs by default.
 
 ## Getting started
 Using the RSA method for generating keys and data signing requires the screen lock to be enabled on the device. It can be easily checked by `checkIfDeviceSecure` method:
@@ -40,6 +45,8 @@ await signer.rotateForEd25519();
 currentKey = await signer.getCurrentPubKey();  
 nextKey = await signer.getNextPubKey();
 ```
+**Warning** The rotation doesn't currently work for RSA algorithm. Work in progress.
+
 #### Getting the `signer`'s uique UUID
 ```dart
 String uuid = '';
