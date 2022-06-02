@@ -16,9 +16,14 @@ Working with RSA algorithm without checking whether the screen lock is set may c
 To start working with the plugin it is necessary to initialize the `signer` object for Ed25519 or RSA method:
 ```dart
 void main() async{  
-  WidgetsFlutterBinding.ensureInitialized();  
- var signer = await THCLabSigningPlugin.establishForEd25519();  //or establishForRSA()
-  runApp(MyApp(signer: signer,));  
+  WidgetsFlutterBinding.ensureInitialized();
+  var isDeviceSecure = await AsymmetricCryptoPrimitives.checkIfDeviceSecure();
+  if (isDeviceSecure) {
+    var signer = await AsymmetricCryptoPrimitives.establishForRSA();
+    runApp(MyApp(
+      signer: signer,
+    ));
+  }
 }
 ```
 Most of the plugin methods are available through `signer` object.
@@ -56,7 +61,7 @@ uuid = await signer.getUuid();
 ```dart
 void main() async{  
   WidgetsFlutterBinding.ensureInitialized();  
- var signer = await THCLabSigningPlugin.getEd25519SignerFromUuid('ecd886f1-1af6-4e62-a6b2-825e2b15ebd2');  //or getRSASignerFromUuid()
+ var signer = await AsymmetricCryptoPrimitives.getEd25519SignerFromUuid('ecd886f1-1af6-4e62-a6b2-825e2b15ebd2');  //or getRSASignerFromUuid()
   runApp(MyApp(signer: signer,));  
 }
 ```
@@ -72,25 +77,25 @@ Removes all the keys that were associated with this `signer` object.
 //Writing data example
 String _data = 'Data';
 String _key = 'Key';
-var result = await THCLabSigningPlugin.writeData(_key, _data); //returns true if everything goes fine. Can throw a SharedPreferencesException or DeviceNotSecuredException
+var result = await AsymmetricCryptoPrimitives.writeData(_key, _data); //returns true if everything goes fine. Can throw a SharedPreferencesException or DeviceNotSecuredException
 ```
 
 ```dart
 //Reading data example
 String _key = 'Key';
-var result = await THCLabSigningPlugin.readData(_key); //returns data written under key if everything goes fine. Can throw a InvalidSignatureException, DeviceNotSecuredException or NoKeyInStorageException
+var result = await AsymmetricCryptoPrimitives.readData(_key); //returns data written under key if everything goes fine. Can throw a InvalidSignatureException, DeviceNotSecuredException or NoKeyInStorageException
 ```
 
 ```dart
 //Deleting data example
 String _key = 'Key';
-var result = await THCLabSigningPlugin.deleteData(_key); //returns true if everything goes fine. Can throw a SharedPreferencesException or DeviceNotSecuredException
+var result = await AsymmetricCryptoPrimitives.deleteData(_key); //returns true if everything goes fine. Can throw a SharedPreferencesException or DeviceNotSecuredException
 ```
 
 ```dart
 //Editing data example
 String _data = 'Data';
 String _key = 'Key';
-var result = await THCLabSigningPlugin.editData(_key, _data); //returns true if everything goes fine. Can throw a SharedPreferencesException or DeviceNotSecuredException
+var result = await AsymmetricCryptoPrimitives.editData(_key, _data); //returns true if everything goes fine. Can throw a SharedPreferencesException or DeviceNotSecuredException
 ```
 
