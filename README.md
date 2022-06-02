@@ -68,7 +68,7 @@ void main() async{
 This method will throw an `IncorrectUuidException` if no keys associated with the entered UUID were saved to the device.
 #### Clean up
 ```dart
-await THCLabSigningPlugin.cleanUp(signer);
+await AsymmetricCryptoPrimitives.cleanUp(signer);
 ```
 Removes all the keys that were associated with this `signer` object.
 
