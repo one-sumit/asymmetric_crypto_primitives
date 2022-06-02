@@ -51,7 +51,7 @@ class ThclabSigningPlugin {
 
   ///Deletes the keys established by signer with particular uuid
   static Future<void> cleanUp(dynamic signer) async{
-    await _channel.invokeMethod('cleanUp', {'uuid' : signer.getUuid()});
+    await _channel.invokeMethod('cleanUp', {'uuid' : await signer.getUuid()});
     signer = null;
   }
 
