@@ -1,4 +1,4 @@
-package com.example.thclab_signing_plugin
+package com.thclab.asymmetric_crypto_primitives
 
 import android.app.Activity
 import android.app.KeyguardManager
@@ -33,11 +33,9 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 import javax.security.auth.x500.X500Principal
 import kotlin.properties.Delegates
-import java.security.KeyPair as JavaKeyPair
 
-
-/** Ed25519SigningPlugin */
-public class ThclabSigningPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.ActivityResultListener {
+/** AsymmetricCryptoPrimitivesPlugin */
+class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.ActivityResultListener  {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -590,13 +588,6 @@ public class ThclabSigningPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
       return false
     }
   }
-
-//  fun registerWith(registrar: PluginRegistry.Registrar) {
-//    activity = registrar.activity()
-//    val channel = MethodChannel(registrar.messenger(), "thclab_signing_plugin")
-//    channel.setMethodCallHandler(THCLabSigningPlugin())
-//  }
-
 }
 
 //KEYSTORE ALIAS

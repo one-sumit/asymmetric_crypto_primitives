@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.thclab_signing_plugin_example">
+    package="com.thclab.asymmetric_crypto_primitives_example">
    <application
-        android:label="thclab_signing_plugin_example"
+        android:label="asymmetric_crypto_primitives_example"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -19,7 +19,6 @@
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
-              android:value="2"
               />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

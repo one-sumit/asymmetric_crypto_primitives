@@ -1,3 +1,3 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.example.thclab_signing_plugin">
+  package="com.thclab.asymmetric_crypto_primitives">
 </manifest>

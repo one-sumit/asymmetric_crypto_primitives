@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:thclab_signing_plugin/thclab_signing_plugin.dart';
+import 'package:asymmetric_crypto_primitives/asymmetric_crypto_primitives.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  var signer = await ThclabSigningPlugin.establishForEd25519();
+  var signer = await AsymmetricCryptoPrimitives.establishForRSA();
   runApp(MyApp(signer: signer,));
 }
 
@@ -78,7 +78,7 @@ class _MyAppState extends State<MyApp> {
                   ),
                   RawMaterialButton(
                     onPressed: () async {
-                      await signer.rotateForEd25519();
+                      await signer.rotateForRSA();
                       currentKey = await signer.getCurrentPubKey();
                       nextKey = await signer.getNextPubKey();
                       setState(() {
@@ -113,7 +113,7 @@ class _MyAppState extends State<MyApp> {
                   ),
                   RawMaterialButton(
                     onPressed: () async {
-                      await ThclabSigningPlugin.cleanUp(signer);
+                      await AsymmetricCryptoPrimitives.cleanUp(signer);
                       setState(() {
                         currentKey = '';
                         nextKey = '';
@@ -141,7 +141,7 @@ class _MyAppState extends State<MyApp> {
                     onPressed: () async {
                       if (writeDataController.text.isNotEmpty &&
                           writeKeyController.text.isNotEmpty) {
-                        var result = await ThclabSigningPlugin.writeData(
+                        var result = await AsymmetricCryptoPrimitives.writeData(
                             writeKeyController.text, writeDataController.text);
                         if (result == true) {
                           setState(() {
@@ -169,7 +169,7 @@ class _MyAppState extends State<MyApp> {
                   RawMaterialButton(
                     onPressed: () async {
                       if (readKeyController.text.isNotEmpty) {
-                        var result = await ThclabSigningPlugin.readData(
+                        var result = await AsymmetricCryptoPrimitives.readData(
                             readKeyController.text);
                         if (result != false) {
                           setState(() {
@@ -197,7 +197,7 @@ class _MyAppState extends State<MyApp> {
                   RawMaterialButton(
                     onPressed: () async {
                       if (deleteKeyController.text.isNotEmpty) {
-                        var result = await ThclabSigningPlugin.deleteData(
+                        var result = await AsymmetricCryptoPrimitives.deleteData(
                             deleteKeyController.text);
                         if (result == true) {
                           setState(() {
@@ -230,7 +230,7 @@ class _MyAppState extends State<MyApp> {
                     onPressed: () async {
                       if (editDataController.text.isNotEmpty &&
                           editKeyController.text.isNotEmpty) {
-                        var result = await ThclabSigningPlugin.editData(
+                        var result = await AsymmetricCryptoPrimitives.editData(
                             editKeyController.text, editDataController.text);
                         if (result == true) {
                           setState(() {

@@ -1,4 +1,4 @@
-package com.example.thclab_signing_plugin_example
+package com.thclab.asymmetric_crypto_primitives_example
 
 import io.flutter.embedding.android.FlutterActivity
 

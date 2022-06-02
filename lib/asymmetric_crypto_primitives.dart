@@ -1,14 +1,13 @@
 
-import 'dart:async';
 
+import 'package:asymmetric_crypto_primitives/rsa_signer.dart';
 import 'package:flutter/services.dart';
-import 'package:thclab_signing_plugin/rsa_signer.dart';
 import 'package:uuid/uuid.dart';
 
 import 'ed25519_signer.dart';
 import 'exceptions.dart';
 
-class ThclabSigningPlugin {
+class AsymmetricCryptoPrimitives {
   static const MethodChannel _channel = MethodChannel('thclab_signing_plugin');
 
   ///Initializes the Ed25519 signer object, which will allow the user to generate keys,
