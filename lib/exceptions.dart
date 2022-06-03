@@ -18,7 +18,7 @@ class IncorrectUuidException implements Exception {
   ///Exception constructor containing the description for the exception.
   IncorrectUuidException(this.cause);
   @override
-  String toString() => "NoKeyInStorageException: $cause";
+  String toString() => "IncorrectUuidException: $cause";
 }
 
 ///An exception thrown when there is no secure screen lock set on the device.
