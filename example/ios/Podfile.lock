@@ -1,0 +1,22 @@
+PODS:
+  - asymmetric_crypto_primitives (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+
+DEPENDENCIES:
+  - asymmetric_crypto_primitives (from `.symlinks/plugins/asymmetric_crypto_primitives/ios`)
+  - Flutter (from `Flutter`)
+
+EXTERNAL SOURCES:
+  asymmetric_crypto_primitives:
+    :path: ".symlinks/plugins/asymmetric_crypto_primitives/ios"
+  Flutter:
+    :path: Flutter
+
+SPEC CHECKSUMS:
+  asymmetric_crypto_primitives: d0c92ab39b497fdd6670f8a9c831c7aaa322099d
+  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+
+COCOAPODS: 1.11.3

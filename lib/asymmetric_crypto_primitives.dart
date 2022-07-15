@@ -6,7 +6,7 @@ import 'ed25519_signer.dart';
 import 'exceptions.dart';
 
 class AsymmetricCryptoPrimitives {
-  static const MethodChannel _channel = MethodChannel('thclab_signing_plugin');
+  static const MethodChannel _channel = MethodChannel('asymmetric_crypto_primitives');
 
   ///Initializes the Ed25519 signer object, which will allow the user to generate keys,
   ///rotate them and delete them.

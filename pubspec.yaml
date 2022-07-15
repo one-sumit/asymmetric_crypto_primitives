@@ -38,6 +38,8 @@ flutter:
       android:
         package: com.thclab.asymmetric_crypto_primitives
         pluginClass: AsymmetricCryptoPrimitivesPlugin
+      ios:
+        pluginClass: AsymmetricCryptoPrimitivesPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

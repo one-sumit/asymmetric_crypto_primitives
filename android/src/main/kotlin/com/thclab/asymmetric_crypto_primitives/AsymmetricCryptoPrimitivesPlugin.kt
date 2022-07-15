@@ -58,7 +58,7 @@ class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, Activi
   private lateinit var EdPrivKey: String
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "thclab_signing_plugin")
+    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "asymmetric_crypto_primitives")
     channel.setMethodCallHandler(this)
     context = flutterPluginBinding.applicationContext
     keyguardManager = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'exceptions.dart';
 
 class Ed25519Signer {
-  static const MethodChannel _channel = MethodChannel('thclab_signing_plugin');
+  static const MethodChannel _channel = MethodChannel('asymmetric_crypto_primitives');
   String uuid;
 
   ///Constructor for Ed25519 signer.
