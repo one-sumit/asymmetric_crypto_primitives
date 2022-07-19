@@ -104,6 +104,11 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
           writeData(data: privKey as! String, key: "\(uuid)_0_priv")
           createNextEd25519Key(uuid: uuid)
           result(true)
+      case "cleanUp":
+          let args = call.arguments as? Dictionary<String, Any>
+          let uuid = (args!["uuid"] as? String)!
+          cleanUp(uuid: uuid)
+          result(true)
       default:
           result("Not implemented!")
           break
@@ -162,15 +167,6 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         }
         return (item as! SecKey)
     }
-    
-//    func showSimpleAlert() {
-//        let alert = UIAlertController(title: "Warning!", message: "Cipher data is null",         preferredStyle: UIAlertController.Style.alert)
-//
-//        alert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: { _ in
-//            //Cancel Action
-//        }))
-//        alert.present(alert, animated: true, completion: nil)
-//    }
     
     public func encryptData(dataToEncrypt: String) -> String{
         let key = loadAESKey(name: IOS_AES_ALIAS)
@@ -391,6 +387,14 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
             return false
         }else{
             return true
+        }
+    }
+    
+    public func cleanUp(uuid: String){
+        for (key, _) in UserDefaults.standard.dictionaryRepresentation() {
+            if key.contains(uuid){
+                UserDefaults.standard.removeObject(forKey: key)
+            }
         }
     }
     
