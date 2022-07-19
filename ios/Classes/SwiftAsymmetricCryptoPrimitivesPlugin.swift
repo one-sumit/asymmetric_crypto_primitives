@@ -93,8 +93,17 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
           if #available(iOS 13.0.0, *) {
               signEd25519(data: dataToSign, uuid: uuid, result: result)
           } else {
-              result("")
+              result(false)
           }
+      case "rotateForEd25519":
+          let args = call.arguments as? Dictionary<String, Any>
+          let uuid = (args!["uuid"] as? String)!
+          let pubKey = readData(key: "\(uuid)_1_pub")
+          let privKey = readData(key: "\(uuid)_1_priv")
+          writeData(data: pubKey as! String, key: "\(uuid)_0_pub")
+          writeData(data: privKey as! String, key: "\(uuid)_0_priv")
+          createNextEd25519Key(uuid: uuid)
+          result(true)
       default:
           result("Not implemented!")
           break
@@ -254,13 +263,13 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
                 context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Log in to your account") { [weak self] (success, error) in
                     if success {
                         let signature = sodium.sign.signature(message: data.bytes, secretKey: sodium.utils.base642bin(secretKey as! String)!)!
-                        result(sodium.utils.bin2base64(signature)!)
+                        result(sodium.utils.bin2hex(signature)!)
                     } else {
-                        result("")
+                        result(false)
                     }
                 }
               } else {
-                  result("")
+                  result(false)
               }
         }
         //var error: NSError?
@@ -394,70 +403,12 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
             return tempdata
         }
     }
-//
-//    @available(iOS 15.0, *)
-//    internal func generateAndStoreSymmetricKey(withKeychainTag: String) throws {
-//      // Parameter:
-//      let alias = withKeychainTag
-//
-//      let key = SymmetricKey(size: .bits256)
-//
-//      let addQuery:[CFString:Any] = [
-//        kSecClass: kSecClassGenericPassword,
-//        kSecAttrLabel: alias,
-//        kSecAttrAccount: "Account \(alias)",
-//        kSecAttrService: "Service \(alias)",
-//        kSecReturnAttributes: true,
-//      ]
-//
-//      var result: CFTypeRef?
-//      let status = SecItemAdd(addQuery as CFDictionary, &result)
-//    }
-//
-//    @available(iOS 15.0, *)
-//    internal func retrieveSymmetricKey(withKeychainTag: String) throws -> SymmetricKey? {
-//      // Parameter:
-//      let alias = withKeychainTag
-//
-//      // Seek a generic password with the given account.
-//      let query = [kSecClass: kSecClassGenericPassword,
-//             kSecAttrAccount: "Account \(alias)",
-//             kSecUseDataProtectionKeychain: true,
-//             kSecReturnData: true] as [String: Any]
-//
-//      // Find and cast the result as data.
-//      var item: CFTypeRef?
-//      switch SecItemCopyMatching(query as CFDictionary, &item) {
-//      case errSecSuccess:
-//        guard let data = item as? Data else { throw Error.client("Fail to convert the key reference to Data.") }
-//        return try SymmetricKey(rawRepresentation: data) // Convert back to a key.
-//      case errSecItemNotFound: return nil
-//      default: throw Error("Error in reading the key")
-//      }
-//    }
     
-    
-    
+    public func writeData(data: String, key: String){
+        let encryptedData = encryptData(dataToEncrypt: data)
+        UserDefaults.standard.set(encryptedData, forKey: key)
+    }
 }
-
-//protocol GenericPasswordConvertible: CustomStringConvertible {
-//    /// Creates a key from a raw representation.
-//    init<D>(rawRepresentation data: D) throws where D: ContiguousBytes
-//
-//    /// A raw representation of the key.
-//    var rawRepresentation: Data { get }
-//}
-
-//@available(iOS 15.0, *)
-//extension SymmetricKey: GenericPasswordConvertible {
-//    init<D>(rawRepresentation data: D) throws where D: ContiguousBytes {
-//        self.init(data: data)
-//    }
-//
-//    var rawRepresentation: Data {
-//        return dataRepresentation  // Contiguous bytes repackaged as a Data instance.
-//    }
-//}
 
 extension String {
 
@@ -474,15 +425,3 @@ extension String {
     }
 
 }
-
-//extension String {
-//  func UTF8toBase64() -> String {
-//      let data = self.data(using: String.Encoding.utf8)
-//    return data?.base64EncodedStringWithOptions([]) ?? ""
-//  }
-//
-//  func Base64toUTF8() -> String {
-//      let data = NSData.init(base64Encoded: self, options: []) ?? NSData()
-//      return String(data: data as Data, encoding: String.Encoding.utf8) ?? ""
-//  }
-//}
