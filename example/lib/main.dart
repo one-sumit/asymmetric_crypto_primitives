@@ -5,7 +5,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   var isDeviceSecure = await AsymmetricCryptoPrimitives.checkIfDeviceSecure();
   if (isDeviceSecure) {
-    var signer = await AsymmetricCryptoPrimitives.establishForRSA();
+    var signer = await AsymmetricCryptoPrimitives.establishForEd25519();
     runApp(MyApp(
       signer: signer,
     ));
@@ -81,7 +81,7 @@ class _MyAppState extends State<MyApp> {
               ),
               RawMaterialButton(
                 onPressed: () async {
-                  await signer.rotateForRSA();
+                  await signer.rotateForEd25519();
                   currentKey = await signer.getCurrentPubKey();
                   nextKey = await signer.getNextPubKey();
                   setState(() {});
