@@ -40,6 +40,8 @@ flutter:
         pluginClass: AsymmetricCryptoPrimitivesPlugin
       ios:
         pluginClass: AsymmetricCryptoPrimitivesPlugin
+      macos:
+        pluginClass: AsymmetricCryptoPrimitivesPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
