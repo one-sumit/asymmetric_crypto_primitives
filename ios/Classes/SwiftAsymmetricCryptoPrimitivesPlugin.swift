@@ -8,7 +8,7 @@ import Foundation
 
 @available(iOS 12.0, *)
 public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
-  var IOS_AES_ALIAS = "9aac15df-4b0f-4f9d-a6b7-210aae2a1179"
+  var IOS_EC_ALIAS = "9aac15df-4b0f-4f9d-a6b7-210aae2a1179"
   let sodium = Sodium()
     var context = LAContext()
     
@@ -16,8 +16,8 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     let channel = FlutterMethodChannel(name: "asymmetric_crypto_primitives", binaryMessenger: registrar.messenger())
     let instance = SwiftAsymmetricCryptoPrimitivesPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
-        if !instance.checkAESKeyExists(){
-        makeAndStoreAESKey(name: instance.IOS_AES_ALIAS)
+        if !instance.checkECKeyExists(){
+        makeAndStoreECKey(name: instance.IOS_EC_ALIAS)
     }
   }
 
@@ -31,12 +31,15 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
           let args = call.arguments as? Dictionary<String, Any>
           let key = (args!["key"] as? String)!
           var data =  UserDefaults.standard.string(forKey: key)
-          print(data)
           if data == nil{
               result(false)
           }else{
               let tempdata = decryptData(dataToDecrypt: data!)
-              data = tempdata
+              if tempdata.isEmpty{
+                  result(false)
+              }else{
+                  data = tempdata
+              }
           }
           result(data)
           break
@@ -45,8 +48,12 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
           let key = (args!["key"] as? String)!
           let data =  (args!["data"] as? String)!
           let encryptedData = encryptData(dataToEncrypt: data)
-          UserDefaults.standard.set(encryptedData, forKey: key)
-          result(true)
+          if encryptedData.isEmpty{
+              result(false)
+          }else{
+              UserDefaults.standard.set(encryptedData, forKey: key)
+              result(true)
+          }
           break
       case "deleteData":
           let args = call.arguments as? Dictionary<String, Any>
@@ -58,8 +65,13 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
           let args = call.arguments as? Dictionary<String, Any>
           let key = (args!["key"] as? String)!
           let data =  (args!["data"] as? String)!
-          UserDefaults.standard.set(data, forKey: key)
-          result(true)
+          let encryptedData = encryptData(dataToEncrypt: data)
+          if encryptedData.isEmpty{
+              result(false)
+          }else{
+              UserDefaults.standard.set(encryptedData, forKey: key)
+              result(true)
+          }
           break
       case "establishForRSA":
           let args = call.arguments as? Dictionary<String, Any>
@@ -117,7 +129,7 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     
     
     ///EC KEYS
-    public static func makeAndStoreAESKey(name: String, requiresBiometry: Bool = false) -> SecKey {
+    public static func makeAndStoreECKey(name: String, requiresBiometry: Bool = false) -> SecKey {
         let flags: SecAccessControlCreateFlags
         if #available(iOS 11.3, *) {
             flags = requiresBiometry ?
@@ -151,7 +163,7 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         return privateKey
     }
     
-    public func loadAESKey(name: String) -> SecKey? {
+    public func loadECKey(name: String) -> SecKey? {
         let tag = name.data(using: .utf8)!
         let query: [String: Any] = [
             kSecClass as String                 : kSecClassKey,
@@ -169,12 +181,10 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     }
     
     public func encryptData(dataToEncrypt: String) -> String{
-        let key = loadAESKey(name: IOS_AES_ALIAS)
+        let key = loadECKey(name: IOS_EC_ALIAS)
         let publicKey = SecKeyCopyPublicKey(key!)
-        print(publicKey)
         let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
         guard SecKeyIsAlgorithmSupported(publicKey!, .encrypt, algorithm) else {
-            print("The guard clause got here")
             return ""
         }
         var error: Unmanaged<CFError>?
@@ -183,15 +193,13 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
                                                    clearTextData as CFData,
                                                    &error) as Data?
         guard cipherTextData != nil else {
-            print("cipherTextData is nil")
-            //showSimpleAlert()
             return ""
         }
         return cipherTextData!.base64EncodedString()
     }
     
     public func decryptData(dataToDecrypt: String) -> String{
-        let privateKey = loadAESKey(name: IOS_AES_ALIAS)
+        let privateKey = loadECKey(name: IOS_EC_ALIAS)
         let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
         guard SecKeyIsAlgorithmSupported(privateKey!, .decrypt, algorithm) else {
             print("Algorithm not supported")
@@ -204,20 +212,16 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
                                                       Data.init(base64Encoded: dataToDecrypt)! as CFData,
                                                       &error) as Data?
         print(clearTextData!)
-        //DispatchQueue.main.async {
         guard clearTextData != nil else {
-            print("clearTextData is nil")
             return ""
         }
         let clearText = String(decoding: clearTextData!, as: UTF8.self)
             // clearText is our decrypted string
-        //}
-        
         return String(decoding: clearTextData!, as: UTF8.self)
     }
     
-    public func checkAESKeyExists() -> Bool{
-        if(loadAESKey(name: IOS_AES_ALIAS) == nil){
+    public func checkECKeyExists() -> Bool{
+        if(loadECKey(name: IOS_EC_ALIAS) == nil){
             return false;
         }else{
             return true;
@@ -229,8 +233,6 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         let keyPair = sodium.sign.keyPair()
         let pub = (keyPair?.publicKey)!
         let priv = (keyPair?.secretKey)!
-        print("pub: \(sodium.utils.bin2base64(pub))")
-        print("priv: \(sodium.utils.bin2base64(priv))")
         let encryptedPub = encryptData(dataToEncrypt: sodium.utils.bin2base64(pub)!)
         let encryptedPriv = encryptData(dataToEncrypt: sodium.utils.bin2base64(priv)!)
         UserDefaults.standard.set(encryptedPub, forKey: "\(uuid)_0_pub")
@@ -241,8 +243,6 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         let keyPair = sodium.sign.keyPair()
         let pub = (keyPair?.publicKey)!
         let priv = (keyPair?.secretKey)!
-        print("pub: \(sodium.utils.bin2base64(pub))")
-        print("priv: \(sodium.utils.bin2base64(priv))")
         let encryptedPub = encryptData(dataToEncrypt: sodium.utils.bin2base64(pub)!)
         let encryptedPriv = encryptData(dataToEncrypt: sodium.utils.bin2base64(priv)!)
         UserDefaults.standard.set(encryptedPub, forKey: "\(uuid)_1_pub")
@@ -252,11 +252,10 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     @available(iOS 13.0.0, *)
     public func signEd25519(data: String, uuid: String, result: @escaping FlutterResult) -> Void{
         let secretKey = readData(key: "\(uuid)_0_priv")
-        //var signature = "".bytes
         var error: NSError?
         DispatchQueue.main.async { [self] in
             if self.context.canEvaluatePolicy(LAPolicy.deviceOwnerAuthentication, error: &error) {
-                context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Log in to your account") { [weak self] (success, error) in
+                context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Please authenticate to prove your identity") { [weak self] (success, error) in
                     if success {
                         let signature = sodium.sign.signature(message: data.bytes, secretKey: sodium.utils.base642bin(secretKey as! String)!)!
                         result(sodium.utils.bin2hex(signature)!)
@@ -268,22 +267,6 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
                   result(false)
               }
         }
-        //var error: NSError?
-//        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
-//            print(error?.localizedDescription ?? "Can't evaluate policy")
-//            result(sodium.utils.bin2base64(signature)!)
-//            return
-//        }
-//        do {
-//            try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Log in to your account")
-//            signature = sodium.sign.signature(message: data.bytes, secretKey: sodium.utils.base642bin(secretKey as! String)!)!
-//        } catch let error {
-//            print(error.localizedDescription)
-//
-//            // Fall back to a asking for username and password.
-//            // ...
-//        }
-        //result(sodium.utils.bin2base64(signature)!)
     }
     
     
@@ -340,10 +323,8 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     
     public func signRSA(data: String, uuid: String) -> String {
         let privateKey = loadRSAKey(name: "\(uuid)_0_rsa")
-        print(privateKey)
         let algorithm: SecKeyAlgorithm = .rsaSignatureRaw
         guard SecKeyIsAlgorithmSupported(privateKey!, .sign, algorithm) else {
-            print("Algorithm not supported")
             return ""
         }
         var signature = Data.init()
@@ -356,24 +337,11 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
             signature = (SecKeyCreateSignature(privateKey!,                                                  algorithm,
                                                dataToSign as CFData,
                                                &error) as Data?)!
-            print(signature)
-//            DispatchQueue.main.async {
-//                self.signature = signature
-//                guard signature != nil else {
-//                    UIAlertController.showSimple(title: "Can't sign",
-//                                                 text: (error!.takeRetainedValue() as Error).localizedDescription,
-//                                                 from: self)
-//                    return
-//                }
-//                // signature is a Data instance containing the digital signature value
-//                // ...
-//            }
         }
         return signature.base64EncodedString()
     }
     
     public func checkUuid(uuid: String) -> Bool{
-        //print(loadRSAKey(name: "\(uuid)_0_rsa"))
         if (loadRSAKey(name: "\(uuid)_0_rsa") != nil) || (checkDataExists(key: "\(uuid)_0_pub") != false){
             return true
         }else{

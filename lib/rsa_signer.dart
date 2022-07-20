@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'exceptions.dart';
 
 class RSASigner {
-  static const MethodChannel _channel = MethodChannel('asymmetric_crypto_primitives');
+  static const MethodChannel _channel =
+      MethodChannel('asymmetric_crypto_primitives');
   String uuid;
 
   ///Constructor for RSA signer.
