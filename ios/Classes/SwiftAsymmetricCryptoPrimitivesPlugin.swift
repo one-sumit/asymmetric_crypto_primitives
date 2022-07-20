@@ -76,7 +76,6 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
       case "establishForRSA":
           let args = call.arguments as? Dictionary<String, Any>
           let uuid = (args!["uuid"] as? String)!
-          print(uuid)
           createRSAKey(name: "\(uuid)_0_rsa")
           createRSAKey(name: "\(uuid)_1_rsa")
           result(true)
@@ -86,7 +85,6 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
           let uuid = (args!["uuid"] as? String)!
           let dataToSign = (args!["message"] as? String)!
           let signature = signRSA(data: dataToSign, uuid: uuid)
-          print("The signature is \(signature)")
           result(signature)
       case "checkUuid":
           let args = call.arguments as? Dictionary<String, Any>
@@ -202,7 +200,6 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         let privateKey = loadECKey(name: IOS_EC_ALIAS)
         let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
         guard SecKeyIsAlgorithmSupported(privateKey!, .decrypt, algorithm) else {
-            print("Algorithm not supported")
             return ""
         }
 
@@ -211,7 +208,6 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
                                                       algorithm,
                                                       Data.init(base64Encoded: dataToDecrypt)! as CFData,
                                                       &error) as Data?
-        print(clearTextData!)
         guard clearTextData != nil else {
             return ""
         }
@@ -303,7 +299,6 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     
     public func loadRSAKey(name: String) -> SecKey? {
         let tag = name.data(using: .utf8)!
-        //print(tag.base64EncodedString())
         let query: [String: Any] = [
             kSecClass as String                 : kSecClassKey,
             kSecAttrApplicationTag as String    : tag,
@@ -312,9 +307,7 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         ]
         
         var item: CFTypeRef?
-        //print("The item is \(item)")
         let status = SecItemCopyMatching(query as CFDictionary, &item)
-        //print("the status is \(status)")
         guard status == errSecSuccess else {
             return nil
         }
