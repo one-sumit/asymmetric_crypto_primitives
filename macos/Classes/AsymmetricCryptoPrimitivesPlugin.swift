@@ -5,13 +5,11 @@ import Sodium
 import LocalAuthentication
 import Foundation
 
-
 @available(macOS 10.15, *)
 public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     let sodium = Sodium()
     var EC_ALIAS = "9aac15df-4b0f-4f9d-a6b7-210aae2a1177"
     var context = LAContext()
-    var keychain = GenericPasswordStore()
 
 
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -52,10 +50,17 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
       case "rotateForEd25519":
           let args = call.arguments as? Dictionary<String, Any>
           let uuid = (args!["uuid"] as? String)!
-          let pubKey = readData(key: "\(uuid)_1_pub")
-          let privKey = readData(key: "\(uuid)_1_priv")
-          writeData(data: pubKey as! String, key: "\(uuid)_0_pub")
-          writeData(data: privKey as! String, key: "\(uuid)_0_priv")
+          //let pubKey = readData(key: "\(uuid)_1_pub")
+          //let privKey = readData(key: "\(uuid)_1_priv")
+          let pubKey = try? retrieveKeychain(username: "\(uuid)_1_pub")
+          let privKey = try? retrieveKeychain(username: "\(uuid)_1_priv")
+        try? updateKeychain(username: "\(uuid)_0_pub", password: pubKey as! String)
+        try? updateKeychain(username: "\(uuid)_0_priv", password: privKey as! String)
+        try? deleteKeychain(username: "\(uuid)_1_pub")
+        try? deleteKeychain(username: "\(uuid)_1_priv")
+
+          //writeData(data: pubKey as! String, key: "\(uuid)_0_pub")
+          //writeData(data: privKey as! String, key: "\(uuid)_0_priv")
           createNextEd25519Key(uuid: uuid)
           result(true)
         break
@@ -68,13 +73,12 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     case "readData":
           let args = call.arguments as? Dictionary<String, Any>
           let key = (args!["key"] as? String)!
-            var data : Any? = nil
-            if key.contains("0_pub") || key.contains("1_pub"){
+          var data : Any? = nil
+          if key.contains("0_pub") || key.contains("1_pub"){
                 data = try? retrieveKeychain(username: key)
-                //print("Data is \(String(decoding:data, as: UTF8.self))")
-                print("Data datatype is \(type(of:data))")
-            }
-          //var data =  UserDefaults.standard.string(forKey: key)
+          }else{
+              data =  UserDefaults.standard.string(forKey: key)
+          }
           if data == nil{
               result(false)
           }else{
@@ -92,7 +96,6 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
           let args = call.arguments as? Dictionary<String, Any>
           let key = (args!["key"] as? String)!
           let data =  (args!["data"] as? String)!
-          //let encryptedData = encryptData(dataToEncrypt: data)
           if data.isEmpty{
               result(false)
           }else{
@@ -110,13 +113,6 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
           let args = call.arguments as? Dictionary<String, Any>
           let key = (args!["key"] as? String)!
           let data =  (args!["data"] as? String)!
-          ///let encryptedData = encryptData(dataToEncrypt: data)
-          //if encryptedData.isEmpty{
-          //    result(false)
-          //}else{
-          //    UserDefaults.standard.set(encryptedData, forKey: key)
-          //    result(true)
-          //}
           UserDefaults.standard.set(data, forKey: key)
           result(true)
           break
@@ -126,92 +122,6 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
   }
     
     
-    ///EC KEYS
-    public static func makeAndStoreECKey(name: String, requiresBiometry: Bool = false) -> SecKey {
-        let tag = name.data(using: .utf8)!
-        let attributes: [String: Any] = [
-            kSecAttrKeyType as String           : kSecAttrKeyTypeEC,
-            kSecAttrKeySizeInBits as String     : 256,
-            kSecPrivateKeyAttrs as String : [
-                kSecAttrIsPermanent as String       : true,
-                kSecAttrApplicationTag as String    : tag,
-            ]
-        ]
-        
-        var error: Unmanaged<CFError>?
-        let privateKey = SecKeyCreateRandomKey(attributes as CFDictionary, &error)! //else {
-            //throw error!.takeRetainedValue() as Error
-        //}
-        //SecKey publicKey = SecKeyCopyPublicKey(privateKey);
-        print("Private key is: \(privateKey)")
-        return privateKey
-    }
-    
-    public func loadECKey(name: String) -> SecKey? {
-        let tag = name.data(using: .utf8)!
-        let query: [String: Any] = [
-            kSecClass as String                 : kSecClassKey,
-            kSecAttrApplicationTag as String    : tag,
-            kSecAttrKeyType as String           : kSecAttrKeyTypeEC,
-            kSecReturnRef as String             : true
-        ]
-        
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
-        guard status == errSecSuccess else {
-            print("error")
-            return nil
-        }
-        print("Key after loading: \(SecKeyCopyPublicKey(item as! SecKey))")
-        return (item as! SecKey)
-    }
-    
-    public func encryptData(dataToEncrypt: String) -> String{
-        let key = try! retrieveSymmetricKey(withKeychainTag: EC_ALIAS)
-        print("The key is: \(key)")
-        let publicKey = SecKeyCopyPublicKey(key! as! SecKey)
-        let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
-        guard SecKeyIsAlgorithmSupported(publicKey!, .encrypt, algorithm) else {
-            return ""
-        }
-        var error: Unmanaged<CFError>?
-        let clearTextData = dataToEncrypt.data(using: .utf8)!
-        let cipherTextData = SecKeyCreateEncryptedData(publicKey!, algorithm,
-                                                   clearTextData as CFData,
-                                                   &error) as Data?
-        guard cipherTextData != nil else {
-            return ""
-        }
-        return cipherTextData!.base64EncodedString()
-    }
-    
-    public func decryptData(dataToDecrypt: String) -> String{
-        let privateKey = loadECKey(name: EC_ALIAS)
-        let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
-        guard SecKeyIsAlgorithmSupported(privateKey!, .decrypt, algorithm) else {
-            return ""
-        }
-
-        var error: Unmanaged<CFError>?
-        let clearTextData = SecKeyCreateDecryptedData(privateKey!,
-                                                      algorithm,
-                                                      Data.init(base64Encoded: dataToDecrypt)! as CFData,
-                                                      &error) as Data?
-        guard clearTextData != nil else {
-            return ""
-        }
-        let clearText = String(decoding: clearTextData!, as: UTF8.self)
-            // clearText is our decrypted string
-        return String(decoding: clearTextData!, as: UTF8.self)
-    }
-    
-    public func checkECKeyExists() -> Bool{
-        if(loadECKey(name: EC_ALIAS) == nil){
-            return false;
-        }else{
-            return true;
-        }
-    }
     
     ///ED25519 KEYS
     public func createEd25519Key(uuid: String){
@@ -264,6 +174,8 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    ///Side functions
+    
     public func readData(key: String) -> Any{
         let data =  UserDefaults.standard.string(forKey: key)
         if data == nil{
@@ -296,7 +208,8 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
    }
    
    public func checkDataExists(key: String) -> Bool{
-       let data =  UserDefaults.standard.string(forKey: key)
+       //let data =  UserDefaults.standard.string(forKey: key)
+       let data = try? retrieveKeychain(username: key)
        if data == nil{
            return false
        }else{
@@ -304,6 +217,7 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
        }
    }
     
+    ///Storing items in keychain and retrieving them
     public func storeKeychain(username: String, password: String) throws -> Any? {
         let data = password.data(using: .utf8)!
 
@@ -334,6 +248,28 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         default: print("Error in reading the key")
         }
         return nil
+    }
+    
+    public func updateKeychain(username: String, password: String) throws -> Any?{
+        let data = password.data(using: .utf8)!
+
+        let query: [String: Any] = [kSecClass as String:  kSecClassGenericPassword,
+                                    kSecAttrAccount as String: username]
+        let attributes: [String: Any] = [kSecClass as String:  kSecClassGenericPassword,
+                                         kSecAttrAccount as String: username,
+                                         kSecValueData as String: data]
+        let status = SecItemUpdate(query as CFDictionary, attributes as CFDictionary)
+        guard status != errSecItemNotFound else { return nil}
+        guard status == errSecSuccess else { return nil }
+        return status
+    }
+    
+    public func deleteKeychain(username: String) throws -> Any?{
+        let query: [String: Any] = [kSecClass as String:  kSecClassGenericPassword,
+                                    kSecAttrAccount as String: username]
+        let status = SecItemDelete(query as CFDictionary)
+        guard status == errSecSuccess || status == errSecItemNotFound else { return nil }
+        return status
     }
 
 }
