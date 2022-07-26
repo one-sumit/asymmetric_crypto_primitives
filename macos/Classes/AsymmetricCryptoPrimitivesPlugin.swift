@@ -6,20 +6,18 @@ import LocalAuthentication
 import Foundation
 
 
-@available(macOS 10.13.4, *)
+@available(macOS 10.15, *)
 public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     let sodium = Sodium()
     var EC_ALIAS = "9aac15df-4b0f-4f9d-a6b7-210aae2a1177"
     var context = LAContext()
+    var keychain = GenericPasswordStore()
 
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "asymmetric_crypto_primitives", binaryMessenger: registrar.messenger)
     let instance = AsymmetricCryptoPrimitivesPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
-//    if !instance.checkECKeyExists(){
-//        makeAndStoreECKey(name: instance.EC_ALIAS)
-//    }
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -33,12 +31,14 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
           let args = call.arguments as? Dictionary<String, Any>
           let uuid = (args!["uuid"] as? String)!
           result(checkUuid(uuid:uuid))
+        break
       case "establishForEd25519":
           let args = call.arguments as? Dictionary<String, Any>
           let uuid = (args!["uuid"] as? String)!
           createEd25519Key(uuid: uuid)
           createNextEd25519Key(uuid: uuid)
           result(true)
+        break
       case "signEd25519":
           let args = call.arguments as? Dictionary<String, Any>
           let uuid = (args!["uuid"] as? String)!
@@ -48,6 +48,7 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
           } else {
               result(false)
           }
+        break
       case "rotateForEd25519":
           let args = call.arguments as? Dictionary<String, Any>
           let uuid = (args!["uuid"] as? String)!
@@ -57,19 +58,27 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
           writeData(data: privKey as! String, key: "\(uuid)_0_priv")
           createNextEd25519Key(uuid: uuid)
           result(true)
+        break
       case "cleanUp":
           let args = call.arguments as? Dictionary<String, Any>
           let uuid = (args!["uuid"] as? String)!
           cleanUp(uuid: uuid)
           result(true)
+        break
     case "readData":
           let args = call.arguments as? Dictionary<String, Any>
           let key = (args!["key"] as? String)!
-          var data =  UserDefaults.standard.string(forKey: key)
+            var data : Any? = nil
+            if key.contains("0_pub") || key.contains("1_pub"){
+                data = try? retrieveKeychain(username: key)
+                //print("Data is \(String(decoding:data, as: UTF8.self))")
+                print("Data datatype is \(type(of:data))")
+            }
+          //var data =  UserDefaults.standard.string(forKey: key)
           if data == nil{
               result(false)
           }else{
-              result(data)
+              result(data as? String)
               //let tempdata = decryptData(dataToDecrypt: data!)
               //if tempdata.isEmpty{
               //    result(false)
@@ -158,9 +167,9 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     }
     
     public func encryptData(dataToEncrypt: String) -> String{
-        let key = loadECKey(name: EC_ALIAS)
+        let key = try! retrieveSymmetricKey(withKeychainTag: EC_ALIAS)
         print("The key is: \(key)")
-        let publicKey = SecKeyCopyPublicKey(key!)
+        let publicKey = SecKeyCopyPublicKey(key! as! SecKey)
         let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
         guard SecKeyIsAlgorithmSupported(publicKey!, .encrypt, algorithm) else {
             return ""
@@ -215,6 +224,10 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         let encryptedPriv = sodium.utils.bin2base64(priv)!
         UserDefaults.standard.set(encryptedPub, forKey: "\(uuid)_0_pub")
         UserDefaults.standard.set(encryptedPriv, forKey: "\(uuid)_0_priv")
+        try! storeKeychain(username: "\(uuid)_0_pub", password: encryptedPub)
+        try! storeKeychain(username: "\(uuid)_0_priv", password: encryptedPriv)
+        //keychain.storeKey(encryptedPub.data(using: .utf8)!, account: "\(uuid)_0_pub")
+        //storeKey(encryptedPub as! GenericPasswordConvertible, account: "\(uuid)_0_pub")
     }
     
     public func createNextEd25519Key(uuid: String){
@@ -227,6 +240,8 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         let encryptedPriv = sodium.utils.bin2base64(priv)!
         UserDefaults.standard.set(encryptedPub, forKey: "\(uuid)_1_pub")
         UserDefaults.standard.set(encryptedPriv, forKey: "\(uuid)_1_priv")
+        try! storeKeychain(username: "\(uuid)_1_pub", password: encryptedPub)
+        try! storeKeychain(username: "\(uuid)_1_priv", password: encryptedPriv)
     }
     
     @available(iOS 13.0.0, *)
@@ -289,4 +304,36 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
        }
    }
     
+    public func storeKeychain(username: String, password: String) throws -> Any? {
+        let data = password.data(using: .utf8)!
+
+    // store password as data and if you want to store username
+        let query: [String: Any] = [kSecClass as String:  kSecClassGenericPassword,
+                                    kSecAttrAccount as String: username,
+                                    kSecValueData as String: data]
+        let status = SecItemAdd(query as CFDictionary, nil)
+        guard status == errSecSuccess else {
+            print("Not working again")
+            return ""
+        }
+        return status
+    }
+    
+    public func retrieveKeychain(username: String) throws -> Any? {
+        let query: [String : Any] = [kSecClass as String: kSecClassGenericPassword,
+                                     kSecAttrAccount as String: username,
+                                     kSecReturnData as String: true]
+        var item: CFTypeRef?
+        switch SecItemCopyMatching(query as CFDictionary, &item) {
+        case errSecSuccess:
+            guard let data = item as? Data else {
+                print("Fail to convert the key reference to Data."); return nil}
+            let keyToReturn = String(decoding:data, as:UTF8.self)
+            return try! keyToReturn
+        case errSecItemNotFound: return nil
+        default: print("Error in reading the key")
+        }
+        return nil
+    }
+
 }
