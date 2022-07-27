@@ -62,7 +62,7 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         let args = call.arguments as? Dictionary<String, Any>
         let key = (args!["key"] as? String)!
         var data : Any? = nil
-        if key.contains("0_pub") || key.contains("1_pub" || key.contains("0_priv") || key.contains("1_priv")){
+        if key.contains("0_pub") || key.contains("1_pub") || key.contains("0_priv") || key.contains("1_priv"){
             data = try? retrieveKeychain(username: key)
         }else{
             data =  UserDefaults.standard.string(forKey: key)
@@ -109,12 +109,8 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         let keyPair = sodium.sign.keyPair()
         let pub = (keyPair?.publicKey)!
         let priv = (keyPair?.secretKey)!
-        //let encryptedPub = encryptData(dataToEncrypt: sodium.utils.bin2base64(pub)!)
-        //let encryptedPriv = encryptData(dataToEncrypt: sodium.utils.bin2base64(priv)!)
         let encryptedPub = sodium.utils.bin2base64(pub)!
         let encryptedPriv = sodium.utils.bin2base64(priv)!
-        //UserDefaults.standard.set(encryptedPub, forKey: "\(uuid)_0_pub")
-        //UserDefaults.standard.set(encryptedPriv, forKey: "\(uuid)_0_priv")
         try! storeKeychain(username: "\(uuid)_0_pub", password: encryptedPub)
         try! storeKeychain(username: "\(uuid)_0_priv", password: encryptedPriv)
     }
@@ -123,12 +119,8 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         let keyPair = sodium.sign.keyPair()
         let pub = (keyPair?.publicKey)!
         let priv = (keyPair?.secretKey)!
-        //let encryptedPub = encryptData(dataToEncrypt: sodium.utils.bin2base64(pub)!)
-        //let encryptedPriv = encryptData(dataToEncrypt: sodium.utils.bin2base64(priv)!)
         let encryptedPub = sodium.utils.bin2base64(pub)!
         let encryptedPriv = sodium.utils.bin2base64(priv)!
-        //UserDefaults.standard.set(encryptedPub, forKey: "\(uuid)_1_pub")
-        //UserDefaults.standard.set(encryptedPriv, forKey: "\(uuid)_1_priv")
         try! storeKeychain(username: "\(uuid)_1_pub", password: encryptedPub)
         try! storeKeychain(username: "\(uuid)_1_priv", password: encryptedPriv)
     }
@@ -174,11 +166,6 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     }
     
     public func cleanUp(uuid: String){
-//        for (key, _) in UserDefaults.standard.dictionaryRepresentation() {
-//            if key.contains(uuid){
-//                UserDefaults.standard.removeObject(forKey: key)
-//            }
-//        }
         if(checkDataExists(key: "\(uuid)_0_pub") != false){
             try? deleteKeychain(username: "\(uuid)_0_pub")
             try? deleteKeychain(username: "\(uuid)_0_priv")
@@ -226,8 +213,7 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         var item: CFTypeRef?
         switch SecItemCopyMatching(query as CFDictionary, &item) {
         case errSecSuccess:
-            guard let data = item as? Data else {
-                print("Fail to convert the key reference to Data."); return nil}
+            guard let data = item as? Data else { return nil}
             let keyToReturn = String(decoding:data, as:UTF8.self)
             return try! keyToReturn
         case errSecItemNotFound: return nil
