@@ -69,9 +69,9 @@ class Ed25519Signer {
     if (isCorrectUuid) {
       var signature = await _channel
           .invokeMethod("signEd25519", {'uuid': uuid, 'message': message});
-      if(signature != false){
+      if (signature != false) {
         return signature;
-      }else{
+      } else {
         throw SigningFailureException('Signing the message has failed.');
       }
     } else {
