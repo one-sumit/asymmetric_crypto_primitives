@@ -69,7 +69,11 @@ class Ed25519Signer {
     if (isCorrectUuid) {
       var signature = await _channel
           .invokeMethod("signEd25519", {'uuid': uuid, 'message': message});
-      return signature;
+      if(signature != false){
+        return signature;
+      }else{
+        throw SigningFailureException('Signing the message has failed.');
+      }
     } else {
       throw IncorrectUuidException(
           'There are no keys associated with this UUID saved on the device');

@@ -53,3 +53,14 @@ class SharedPreferencesException implements Exception {
   @override
   String toString() => "SharedPreferencesException: $cause";
 }
+
+///An exception thrown when signing the message has failed
+class SigningFailureException implements Exception{
+  ///The description for the exception.
+  String cause;
+
+  ///Exception constructor containing the description for the exception.
+  SigningFailureException(this.cause);
+  @override
+  String toString() => "SigningFailureException: $cause";
+}
