@@ -8,5 +8,5 @@ import Foundation
 import asymmetric_crypto_primitives
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-    AsymmetricCryptoPrimitivesPlugin.register(with: registry.registrar(forPlugin: "AsymmetricCryptoPrimitivesPlugin"))
+  AsymmetricCryptoPrimitivesPlugin.register(with: registry.registrar(forPlugin: "AsymmetricCryptoPrimitivesPlugin"))
 }
