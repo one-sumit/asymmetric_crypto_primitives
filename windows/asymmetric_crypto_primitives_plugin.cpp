@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
+#include "sodium/crypto_sign.h"
+#include "sodium.h"
 
 using namespace std;
 using flutter::EncodableMap;
@@ -71,6 +73,35 @@ std::string GetKeyArgument(const flutter::MethodCall<>& method_call) {
     }
   }
   return key;
+}
+
+// Returns the uuid argument from |method_call| if it is present, otherwise
+// returns an empty string.
+std::string GetUuidArgument(const flutter::MethodCall<>& method_call) {
+  std::string uuid;
+  const auto* arguments = std::get_if<EncodableMap>(method_call.arguments());
+  if (arguments) {
+    auto uuid_it = arguments->find(EncodableValue("uuid"));
+    if (uuid_it != arguments->end()) {
+      uuid = std::get<std::string>(uuid_it->second);
+    }
+  }
+  return uuid;
+}
+
+void create_file(){
+	std::ofstream outfile;
+	char* appdata = getenv("APPDATA"); //get the path to folder Roaming AppData
+	char* fileName = (char*) "\\passFile.txt"; //get the name of the .txt file
+	
+	//connect the path and the .txt file
+	char * qq = (char*) malloc((strlen(appdata)+ strlen(fileName))*sizeof(char));
+	strcpy(qq,appdata);
+	strcat(qq,fileName);
+
+	//open and close the file to create it
+	outfile.open(qq, std::ios_base::app);
+	outfile.close();
 }
 
 void write_data(char* key,const char* data){
@@ -232,6 +263,50 @@ void update_data(char* key, const char* data){
 	rename(qq2, qq);
 }
 
+void generateEd25519Key(string uuid){
+	unsigned char pk[crypto_sign_PUBLICKEYBYTES]; //create empty char array for public key
+ 	unsigned char sk[crypto_sign_SECRETKEYBYTES]; //create empty char array for secret key
+ 	crypto_sign_keypair(pk,sk); //generate the keypair
+ 	string sk_string = std::string((char *) sk,sizeof sk); //create string from binary secret key
+	string pk_string = std::string((char *) pk,sizeof pk); //create string from binary public key
+
+	//get the length of public key in base64
+	size_t dst_pk_len = sodium_base64_encoded_len (crypto_sign_PUBLICKEYBYTES, sodium_base64_VARIANT_URLSAFE);
+	//get the length of secret key in base64
+	size_t dst_sk_len = sodium_base64_encoded_len (crypto_sign_SECRETKEYBYTES, sodium_base64_VARIANT_URLSAFE);
+	char* dst_pk = new char[dst_pk_len]; //create destination char array for public key
+	char* dst_sk = new char[dst_sk_len]; //create destination char array for secret key
+	
+	//convert the public key from binary to base64 char array
+	sodium_bin2base64(dst_pk, dst_pk_len, (unsigned char*) pk, crypto_sign_PUBLICKEYBYTES, sodium_base64_VARIANT_URLSAFE);
+	//convert the secret key from binary to base64 char array
+	sodium_bin2base64(dst_sk, dst_sk_len, (unsigned char*) sk, crypto_sign_SECRETKEYBYTES, sodium_base64_VARIANT_URLSAFE);
+
+	//write the public and private key in base64 to .txt file
+	write_data((char*) (uuid + "_0_pub").c_str(),sodium_bin2base64(dst_pk, dst_pk_len, (unsigned char*) pk, crypto_sign_PUBLICKEYBYTES, sodium_base64_VARIANT_URLSAFE));
+	write_data((char*) (uuid + "_0_priv").c_str(),sodium_bin2base64(dst_sk, dst_sk_len, (unsigned char*) sk, crypto_sign_SECRETKEYBYTES, sodium_base64_VARIANT_URLSAFE));
+}
+
+void generateNextEd25519Key(string uuid){
+	unsigned char pk[crypto_sign_PUBLICKEYBYTES]; //create empty char array for public key
+ 	unsigned char sk[crypto_sign_SECRETKEYBYTES]; //create empty char array for secret key
+ 	crypto_sign_keypair(pk,sk); //generate the keypair
+ 	string sk_string = std::string((char *) sk,sizeof sk); //create string from binary secret key
+	string pk_string = std::string((char *) pk,sizeof pk); //create string from binary public key
+
+	//get the length of public key in base64
+	size_t dst_pk_len = sodium_base64_encoded_len (crypto_sign_PUBLICKEYBYTES, sodium_base64_VARIANT_URLSAFE);
+	//get the length of secret key in base64
+	size_t dst_sk_len = sodium_base64_encoded_len (crypto_sign_SECRETKEYBYTES, sodium_base64_VARIANT_URLSAFE);
+	char* dst_pk = new char[dst_pk_len]; //create destination char array for public key
+	char* dst_sk = new char[dst_sk_len]; //create destination char array for secret key
+	
+	//write the public and private key in base64 to .txt file
+	write_data((char*) (uuid + "_1_pub").c_str(),sodium_bin2base64(dst_pk, dst_pk_len, (unsigned char*) pk, crypto_sign_PUBLICKEYBYTES, sodium_base64_VARIANT_URLSAFE));
+	write_data((char*) (uuid + "_1_priv").c_str(),sodium_bin2base64(dst_sk, dst_sk_len, (unsigned char*) sk, crypto_sign_SECRETKEYBYTES, sodium_base64_VARIANT_URLSAFE));
+
+}
+
 
 AsymmetricCryptoPrimitivesPlugin::AsymmetricCryptoPrimitivesPlugin() {}
 
@@ -240,6 +315,7 @@ AsymmetricCryptoPrimitivesPlugin::~AsymmetricCryptoPrimitivesPlugin() {}
 void AsymmetricCryptoPrimitivesPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+    sodium_init();
     cout << method_call.method_name() << endl;
   if (method_call.method_name().compare("getPlatformVersion") == 0) {
     std::ostringstream version_stream;

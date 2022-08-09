@@ -1,0 +1,10 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskLabel": "zadanie-asymmetric_crypto_primitives_plugin",
+      "appliesTo": "windows/asymmetric_crypto_primitives_plugin.cpp",
+      "type": "launch"
+    }
+  ]
+}

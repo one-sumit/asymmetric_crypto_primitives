@@ -8,6 +8,8 @@ cmake_minimum_required(VERSION 3.14)
 set(PROJECT_NAME "asymmetric_crypto_primitives")
 project(${PROJECT_NAME} LANGUAGES CXX)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -lsodium")
+
 # This value is used when generating builds using this plugin, so it must
 # not be changed
 set(PLUGIN_NAME "asymmetric_crypto_primitives_plugin")
@@ -24,7 +26,8 @@ add_library(${PLUGIN_NAME} SHARED
   "include/asymmetric_crypto_primitives/asymmetric_crypto_primitives_plugin_c_api.h"
   "asymmetric_crypto_primitives_plugin_c_api.cpp"
   ${PLUGIN_SOURCES}
-)
+  )
+add_library(sodium SHARED IMPORTED)
 
 # Apply a standard set of build settings that are configured in the
 # application-level CMakeLists.txt. This can be removed for plugins that want
@@ -35,19 +38,30 @@ apply_standard_settings(${PLUGIN_NAME})
 # between plugins. This should not be removed; any symbols that should be
 # exported should be explicitly exported with the FLUTTER_PLUGIN_EXPORT macro.
 set_target_properties(${PLUGIN_NAME} PROPERTIES
-  CXX_VISIBILITY_PRESET hidden)
+  CXX_VISIBILITY_PRESET hidden
+  IMPORTED_IMPLIB "${CMAKE_CURRENT_SOURCE_DIR}/libsodium.lib"
+  IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/libsodium.dll"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/sodium"
+  )
 target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
 
 # Source include directories and library dependencies. Add any plugin-specific
 # dependencies here.
 target_include_directories(${PLUGIN_NAME} INTERFACE
-  "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin)
+  "${CMAKE_CURRENT_SOURCE_DIR}/include"
+  "${CMAKE_CURRENT_SOURCE_DIR}/sodium"
+  )
+target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin
+"${CMAKE_CURRENT_SOURCE_DIR}/libsodium.lib" PRIVATE flutter flutter_wrapper_plugin
+)
+
+# include(Findsodium.cmake)
+
 
 # List of absolute paths to libraries that should be bundled with the plugin.
 # This list could contain prebuilt libraries, or libraries created by an
 # external build triggered from this build file.
 set(asymmetric_crypto_primitives_bundled_libraries
-  ""
+  "${CMAKE_CURRENT_SOURCE_DIR}/libsodium.lib"
   PARENT_SCOPE
 )
