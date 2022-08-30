@@ -20,8 +20,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
-#include "sodium/crypto_sign.h"
-#include "sodium.h"
+//#include "sodium/crypto_sign.h"
+//#include "sodium.h"
 
 using namespace std;
 using flutter::EncodableMap;
@@ -93,7 +93,7 @@ void create_file(){
 	std::ofstream outfile;
 	char* appdata = getenv("APPDATA"); //get the path to folder Roaming AppData
 	char* fileName = (char*) "\\passFile.txt"; //get the name of the .txt file
-	
+
 	//connect the path and the .txt file
 	char * qq = (char*) malloc((strlen(appdata)+ strlen(fileName))*sizeof(char));
 	strcpy(qq,appdata);
@@ -108,7 +108,7 @@ void write_data(char* key,const char* data){
 	std::ofstream outfile;
 	char* appdata = getenv("APPDATA"); //get the path to folder Roaming AppData
 	char* fileName = (char*) "\\passFile.txt"; //get the name of the .txt file
-	
+
 	//connect the path and the .txt file
 	char * qq = (char*) malloc((strlen(appdata)+ strlen(fileName))*sizeof(char));
 	strcpy(qq,appdata);
@@ -116,7 +116,7 @@ void write_data(char* key,const char* data){
 
 	//open the file to write data to it
 	outfile.open(qq, std::ios_base::app);
-	
+
 	//connect the key, delimiter : and data into one string
 	char* data_to_write = (char*) malloc((strlen(key)+strlen(":")+ strlen(data))*sizeof(char));
 	strcpy(data_to_write, key);
@@ -127,7 +127,7 @@ void write_data(char* key,const char* data){
 	if(outfile.is_open()){
 		outfile << data_to_write <<  std::endl;
 	}
-	
+
 	//close the file
 	outfile.close();
 }
@@ -175,21 +175,21 @@ void delete_data(char* key){
 	char* appdata = getenv("APPDATA"); //get the path to folder Roaming AppData
 	char* fileName = (char*) "\\passFile.txt"; //get the name of the .txt file
 	char* fileNameTemp = (char*) "\\passFileTemp.txt"; //get the name of the temporary .txt file
-	
+
 	//connect the path and the .txt file
 	char * qq = (char*) malloc((strlen(appdata)+ strlen(fileName))*sizeof(char));
 	strcpy(qq,appdata);
 	strcat(qq,fileName);
-	
+
 	//connect the path and the temporary .txt file
 	char * qq2 = (char*) malloc((strlen(appdata)+ strlen(fileNameTemp))*sizeof(char));
 	strcpy(qq2,appdata);
 	strcat(qq2,fileNameTemp);
-	
+
 	//create streams to read from .txt and write to temp .txt
 	std::ifstream file_to_read(qq);
 	std::ofstream file_to_write(qq2);
-	
+
 	//while the .txt file has not reached its end
 	if (!file_to_read.eof()) {
 		std::string line;
@@ -205,7 +205,7 @@ void delete_data(char* key){
 			}
 		}
 	}
-	
+
 	//close both files
 	file_to_read.close();
 	file_to_write.close();
@@ -218,21 +218,21 @@ void update_data(char* key, const char* data){
 	char* appdata = getenv("APPDATA"); //get the path to folder Roaming AppData
 	char* fileName = (char*) "\\passFile.txt"; //get the name of the .txt file
 	char* fileNameTemp = (char*) "\\passFileTemp.txt"; //get the name of the temporary .txt file
-	
+
 	//connect the path and the .txt file
 	char * qq = (char*) malloc((strlen(appdata)+ strlen(fileName))*sizeof(char));
 	strcpy(qq,appdata);
 	strcat(qq,fileName);
-	
+
 	//connect the path and the temporary .txt file
 	char * qq2 = (char*) malloc((strlen(appdata)+ strlen(fileNameTemp))*sizeof(char));
 	strcpy(qq2,appdata);
 	strcat(qq2,fileNameTemp);
-	
+
 	//create streams to read from .txt and write to temp .txt
 	std::ifstream file_to_read(qq);
 	std::ofstream file_to_write(qq2);
-	
+
 	//while the .txt file has not reached its end
 	if (!file_to_read.eof()) {
 		std::string line;
@@ -255,7 +255,7 @@ void update_data(char* key, const char* data){
 			}
 		}
 	}
-	//close both files 
+	//close both files
 	file_to_read.close();
 	file_to_write.close();
 	//remove the original .txt file and rename the temp file to the original
@@ -263,6 +263,7 @@ void update_data(char* key, const char* data){
 	rename(qq2, qq);
 }
 
+/*
 void generateEd25519Key(string uuid){
 	unsigned char pk[crypto_sign_PUBLICKEYBYTES]; //create empty char array for public key
  	unsigned char sk[crypto_sign_SECRETKEYBYTES]; //create empty char array for secret key
@@ -276,7 +277,7 @@ void generateEd25519Key(string uuid){
 	size_t dst_sk_len = sodium_base64_encoded_len (crypto_sign_SECRETKEYBYTES, sodium_base64_VARIANT_URLSAFE);
 	char* dst_pk = new char[dst_pk_len]; //create destination char array for public key
 	char* dst_sk = new char[dst_sk_len]; //create destination char array for secret key
-	
+
 	//convert the public key from binary to base64 char array
 	sodium_bin2base64(dst_pk, dst_pk_len, (unsigned char*) pk, crypto_sign_PUBLICKEYBYTES, sodium_base64_VARIANT_URLSAFE);
 	//convert the secret key from binary to base64 char array
@@ -300,13 +301,13 @@ void generateNextEd25519Key(string uuid){
 	size_t dst_sk_len = sodium_base64_encoded_len (crypto_sign_SECRETKEYBYTES, sodium_base64_VARIANT_URLSAFE);
 	char* dst_pk = new char[dst_pk_len]; //create destination char array for public key
 	char* dst_sk = new char[dst_sk_len]; //create destination char array for secret key
-	
+
 	//write the public and private key in base64 to .txt file
 	write_data((char*) (uuid + "_1_pub").c_str(),sodium_bin2base64(dst_pk, dst_pk_len, (unsigned char*) pk, crypto_sign_PUBLICKEYBYTES, sodium_base64_VARIANT_URLSAFE));
 	write_data((char*) (uuid + "_1_priv").c_str(),sodium_bin2base64(dst_sk, dst_sk_len, (unsigned char*) sk, crypto_sign_SECRETKEYBYTES, sodium_base64_VARIANT_URLSAFE));
 
 }
-
+*/
 
 AsymmetricCryptoPrimitivesPlugin::AsymmetricCryptoPrimitivesPlugin() {}
 
@@ -315,20 +316,7 @@ AsymmetricCryptoPrimitivesPlugin::~AsymmetricCryptoPrimitivesPlugin() {}
 void AsymmetricCryptoPrimitivesPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue> &method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
-    sodium_init();
-    cout << method_call.method_name() << endl;
-  if (method_call.method_name().compare("getPlatformVersion") == 0) {
-    std::ostringstream version_stream;
-    version_stream << "Windows ";
-    if (IsWindows10OrGreater()) {
-      version_stream << "10+";
-    } else if (IsWindows8OrGreater()) {
-      version_stream << "8";
-    } else if (IsWindows7OrGreater()) {
-      version_stream << "7";
-    }
-    result->Success(flutter::EncodableValue(version_stream.str()));
-  }else if(method_call.method_name().compare("writeData") == 0){
+  if(method_call.method_name().compare("writeData") == 0){
     std::string data = GetDataArgument(method_call);
     std::string key = GetKeyArgument(method_call);
     write_data((char*) key.c_str(), data.c_str());

@@ -58,6 +58,12 @@ Currently the only supported algorithm is Ed25519 with RSA not available yet. As
 - Signing messages is protected with local authentication.
 - `writeData()` method stores data in NSUserDefaults, not encrypted as no keys are stored in there.
 
+### Windows
+Currently, only functions for storing data are available. Key management will be delivered soon.
+
+##### **Features of MacOS version:**
+- `writeData()` method stores data in NSUserDefaults, not encrypted as no keys are stored in there.
+
 ## Usage
 #### Signing data
 ```dart  
