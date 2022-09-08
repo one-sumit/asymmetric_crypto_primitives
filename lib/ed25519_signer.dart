@@ -100,8 +100,7 @@ class Ed25519Signer {
               localizedReason: 'Please authenticate to show account balance',
               options: const AuthenticationOptions(useErrorDialogs: false));
           if (didAuthenticate) {
-            var signature =
-                await NaclWin.signMessage(message, key);
+            var signature = await NaclWin.signMessage(message, key);
             return signature;
           } else {
             throw SigningFailureException('Signing the message has failed.');
