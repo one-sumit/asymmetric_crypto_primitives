@@ -21,7 +21,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.3.0"
+    version: "0.4.0"
   async:
     dependency: transitive
     description:
@@ -242,6 +242,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.2"
+  nacl_win:
+    dependency: transitive
+    description:
+      name: nacl_win
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.1"
   path:
     dependency: transitive
     description:
@@ -303,13 +310,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
-  sodium_key_generator_plugin:
-    dependency: transitive
-    description:
-      path: "../sodium_key_generator_plugin"
-      relative: true
-    source: path
-    version: "0.0.1"
   source_span:
     dependency: transitive
     description:

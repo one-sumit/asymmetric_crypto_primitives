@@ -1,8 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:sodium_key_generator_plugin/sodium_key_generator_plugin.dart';
-import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:nacl_win/nacl_win.dart';
 
 import 'package:local_auth/local_auth.dart';
 import 'exceptions.dart';
@@ -73,7 +72,7 @@ class Ed25519Signer {
             'writeData', {'key': "${uuid}_0_pub", 'data': pubKey1});
         await _channel.invokeMethod(
             'writeData', {'key': "${uuid}_0_priv", 'data': privKey1});
-        var edKeyPair = await SodiumKeyGeneratorPlugin.generateKey();
+        var edKeyPair = await NaclWin.generateKey();
         await _channel.invokeMethod(
             'writeData', {'key': "${uuid}_1_pub", 'data': edKeyPair.pubKey});
         await _channel.invokeMethod(
@@ -102,13 +101,12 @@ class Ed25519Signer {
               options: const AuthenticationOptions(useErrorDialogs: false));
           if (didAuthenticate) {
             var signature =
-                await SodiumKeyGeneratorPlugin.signMessage(message, key);
-            print(signature);
+                await NaclWin.signMessage(message, key);
             return signature;
           } else {
             throw SigningFailureException('Signing the message has failed.');
           }
-        } on PlatformException catch (e) {
+        } on PlatformException {
           throw SigningFailureException('Signing the message has failed.');
         }
       } else {

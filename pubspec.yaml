@@ -12,9 +12,8 @@ dependencies:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
   uuid: ^3.0.6
-  sodium_key_generator_plugin:
-    path: sodium_key_generator_plugin
   local_auth: ^2.1.2
+  nacl_win: ^0.0.1
 
 dev_dependencies:
   flutter_test:

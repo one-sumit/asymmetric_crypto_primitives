@@ -1,8 +1,8 @@
 import 'package:asymmetric_crypto_primitives/rsa_signer.dart';
 import 'package:flutter/services.dart';
-import 'package:sodium_key_generator_plugin/bridge_generated.dart';
-import 'package:sodium_key_generator_plugin/sodium_key_generator_plugin.dart';
+import 'package:nacl_win/bridge_generated.dart';
 import 'package:uuid/uuid.dart';
+import 'package:nacl_win/nacl_win.dart';
 import 'dart:io';
 
 import 'ed25519_signer.dart';
@@ -17,10 +17,10 @@ class AsymmetricCryptoPrimitives {
   static Future<Ed25519Signer> establishForEd25519() async {
     if (Platform.isWindows) {
       String uuid = const Uuid().v4().toString();
-      EdKeyPair keyPair0 = await SodiumKeyGeneratorPlugin.generateKey();
+      EdKeyPair keyPair0 = await NaclWin.generateKey();
       await writeData("${uuid}_0_pub", keyPair0.pubKey);
       await writeData("${uuid}_0_priv", keyPair0.privKey);
-      EdKeyPair keyPair1 = await SodiumKeyGeneratorPlugin.generateKey();
+      EdKeyPair keyPair1 = await NaclWin.generateKey();
       await writeData("${uuid}_1_pub", keyPair1.pubKey);
       await writeData("${uuid}_1_priv", keyPair1.privKey);
       return Ed25519Signer(uuid);
