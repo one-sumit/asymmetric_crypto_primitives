@@ -3,13 +3,10 @@ import 'package:asymmetric_crypto_primitives/asymmetric_crypto_primitives.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  var isDeviceSecure = await AsymmetricCryptoPrimitives.checkIfDeviceSecure();
-  if (isDeviceSecure) {
-    var signer = await AsymmetricCryptoPrimitives.establishForEd25519();
-    runApp(MyApp(
-      signer: signer,
-    ));
-  }
+  var signer = await AsymmetricCryptoPrimitives.establishForEd25519();
+  runApp(MyApp(
+    signer: signer,
+  ));
 }
 
 class MyApp extends StatefulWidget {

@@ -12,3 +12,6 @@ added MacOS support
 
 ## 0.3.0
 added partial Windows support
+
+## 0.4.0
+added Windows support

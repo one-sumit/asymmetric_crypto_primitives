@@ -59,10 +59,14 @@ Currently the only supported algorithm is Ed25519 with RSA not available yet. As
 - `writeData()` method stores data in NSUserDefaults, not encrypted as no keys are stored in there.
 
 ### Windows
-Currently, only functions for storing data are available. Key management will be delivered soon.
+:warning: **The Windows version of the plugin is still under development. Currently the keys are stored in a public directory with no encryption!** :warning:
 
-##### **Features of MacOS version:**
-- `writeData()` method stores data in NSUserDefaults, not encrypted as no keys are stored in there.
+The only supported algorithm is Ed25519 with RSA not available yet. Sodium features are working through Rust plugin.
+
+##### **Features of Windows version:**
+- The Ed25519 keys are generated with Libsodium using a Windows plugin with Rust and stored in `passFile.txt` file in `Roaming AppData` directory.
+- Signing messages is not protected with local authentication (by plugin, not natively).
+- `writeData()` method stores data in `Roaming AppData` directory, not encrypted
 
 ## Usage
 #### Signing data

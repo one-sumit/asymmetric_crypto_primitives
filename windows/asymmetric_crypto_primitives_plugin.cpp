@@ -137,6 +137,38 @@ bool is_file_exist(const char *fileName){
     return infile.good();
 }
 
+bool check_uuid_exists(char* uuid){
+    char* appdata = getenv("APPDATA"); //get the path to folder Roaming AppData
+    	char* fileName = (char*) "\\passFile.txt"; //get the name of the .txt file
+
+    	//connect the path and the .txt file
+    	char * qq = (char*) malloc((strlen(appdata)+ strlen(fileName))*sizeof(char));
+    	strcpy(qq,appdata);
+    	strcat(qq,fileName);
+
+    	//check if the file exists to avoid reading data before it is written
+    	if(is_file_exist(qq)){
+    		std::ifstream file(qq);
+    		if (file.is_open()) {
+    			std::string line;
+    			//get each line of the .txt file
+    			while (std::getline(file, line)) {
+    				//create a string from each line
+    				std::string myLine(line.c_str());
+    				//if line contains the key (here uuid), return the data (here, key to sign)
+    				if (myLine.find(uuid) != std::string::npos) {
+    					return true;
+    				}
+    			}
+    		//close the file
+    		file.close();
+    		}
+    		return false;
+    	}else{
+    		return false;
+    	}
+}
+
 std::string read_data(char* key){
 	char* appdata = getenv("APPDATA"); //get the path to folder Roaming AppData
 	char* fileName = (char*) "\\passFile.txt"; //get the name of the .txt file
@@ -263,6 +295,13 @@ void update_data(char* key, const char* data){
 	rename(qq2, qq);
 }
 
+void cleanUp(char* uuid){
+    bool isUuid = check_uuid_exists(uuid);
+    if(isUuid){
+        delete_data(uuid);
+    }
+}
+
 /*
 void generateEd25519Key(string uuid){
 	unsigned char pk[crypto_sign_PUBLICKEYBYTES]; //create empty char array for public key
@@ -338,7 +377,15 @@ void AsymmetricCryptoPrimitivesPlugin::HandleMethodCall(
     std::string key = GetKeyArgument(method_call);
     update_data((char*) key.c_str(), data.c_str());
     result->Success(flutter::EncodableValue(true));
-  }
+  }else if(method_call.method_name().compare("checkUuid") == 0){
+      std::string uuid = GetUuidArgument(method_call);
+      bool isUuid = check_uuid_exists((char*) uuid.c_str());
+      result->Success(flutter::EncodableValue(isUuid));
+  }else if(method_call.method_name().compare("cleanUp") == 0){
+     std::string uuid = GetUuidArgument(method_call);
+     cleanUp((char*) uuid.c_str());
+     result->Success(flutter::EncodableValue(true));
+   }
   else {
     result->NotImplemented();
   }

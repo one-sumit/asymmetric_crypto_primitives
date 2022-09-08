@@ -1,7 +1,7 @@
-name: asymmetric_crypto_primitives
-description: Flutter plugin for signing and managing keys on different devices.
-version: 0.4.0
-homepage: https://github.com/THCLab/asymmetric_crypto_primitives
+name: sodium_key_generator_plugin
+description: A new Flutter project.
+version: 0.0.1
+homepage:
 
 environment:
   sdk: ">=2.17.1 <3.0.0"
@@ -10,11 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_rust_bridge: ^1.45.0
   plugin_platform_interface: ^2.0.2
-  uuid: ^3.0.6
-  sodium_key_generator_plugin:
-    path: sodium_key_generator_plugin
-  local_auth: ^2.1.2
 
 dev_dependencies:
   flutter_test:
@@ -38,15 +35,8 @@ flutter:
   # adding or updating assets for this project.
   plugin:
     platforms:
-      android:
-        package: com.thclab.asymmetric_crypto_primitives
-        pluginClass: AsymmetricCryptoPrimitivesPlugin
-      ios:
-        pluginClass: AsymmetricCryptoPrimitivesPlugin
-      macos:
-        pluginClass: AsymmetricCryptoPrimitivesPlugin
       windows:
-        pluginClass: AsymmetricCryptoPrimitivesPluginCApi
+        pluginClass: SodiumKeyGeneratorPluginCApi
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

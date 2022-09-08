@@ -3,8 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  asymmetric_crypto_primitives
-  local_auth_windows
   sodium_key_generator_plugin
 )
 
