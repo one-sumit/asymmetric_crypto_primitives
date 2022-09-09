@@ -97,7 +97,7 @@ class Ed25519Signer {
         final LocalAuthentication auth = LocalAuthentication();
         try {
           final bool didAuthenticate = await auth.authenticate(
-              localizedReason: 'Please authenticate to show account balance',
+              localizedReason: 'Please authenticate to sign the message',
               options: const AuthenticationOptions(useErrorDialogs: false));
           if (didAuthenticate) {
             var signature = await NaclWin.signMessage(message, key);

@@ -15,3 +15,6 @@ added partial Windows support
 
 ## 0.4.0
 added Windows support
+
+## 0.4.1
+fixed authentication message for Windows
