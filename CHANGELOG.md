@@ -18,3 +18,6 @@ added Windows support
 
 ## 0.4.1
 fixed authentication message for Windows
+
+## 0.4.2
+changed keys to url safe base64

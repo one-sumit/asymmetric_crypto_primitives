@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:nacl_win/nacl_win.dart';
@@ -21,7 +22,15 @@ class Ed25519Signer {
     if (isCorrectUuid) {
       var key =
           await _channel.invokeMethod("readData", {'key': "${uuid}_0_pub"});
-      return key;
+      if (Platform.isWindows || Platform.isAndroid) {
+        var codec = const Base64Codec();
+        var encodeKey = codec.decode(key);
+        var urlCodec = const Base64Codec.urlSafe();
+        var urlSafeKey = urlCodec.encode(encodeKey);
+        return urlSafeKey;
+      } else {
+        return key;
+      }
     } else {
       throw IncorrectUuidException(
           'There are no keys associated with this UUID saved on the device');
@@ -35,7 +44,11 @@ class Ed25519Signer {
     if (isCorrectUuid) {
       var key =
           await _channel.invokeMethod("readData", {'key': "${uuid}_1_pub"});
-      return key;
+      var codec = const Base64Codec();
+      var encodeKey = codec.decode(key);
+      var urlCodec = const Base64Codec.urlSafe();
+      var urlSafeKey = urlCodec.encode(encodeKey);
+      return urlSafeKey;
     } else {
       throw IncorrectUuidException(
           'There are no keys associated with this UUID saved on the device');
