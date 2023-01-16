@@ -27,3 +27,6 @@ added `signEd25519NoAuth` method to support signing messages without authenticat
 
 ## 0.4.4
 added dependency on new version of `nacl_win`
+
+## 0.4.5
+added dependency on new version of `nacl_win`

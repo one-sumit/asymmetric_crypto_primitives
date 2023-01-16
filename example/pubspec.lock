@@ -21,7 +21,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.4.4"
+    version: "0.4.5"
   async:
     dependency: transitive
     description:
@@ -131,7 +131,7 @@ packages:
       name: flutter_rust_bridge
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.61.1"
+    version: "1.54.1"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -248,7 +248,7 @@ packages:
       name: nacl_win
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.3"
+    version: "0.0.4"
   path:
     dependency: transitive
     description:
