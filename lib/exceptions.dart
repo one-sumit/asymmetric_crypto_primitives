@@ -64,3 +64,14 @@ class SigningFailureException implements Exception {
   @override
   String toString() => "SigningFailureException: $cause";
 }
+
+///An exception thrown when the platform is not supported
+class PlatformNotSupportedException implements Exception {
+  ///The description for the exception.
+  String cause;
+
+  ///Exception constructor containing the description for the exception.
+  PlatformNotSupportedException(this.cause);
+  @override
+  String toString() => "PlatformNotSupportedException: $cause";
+}

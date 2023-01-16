@@ -95,6 +95,22 @@ class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, Activi
 //      var kp = KeyPair(Key.fromBase64String(pub as String?), Key.fromBase64String(priv as String?))
 //      var signature = message?.let { signEd25519(kp, it, lazySodium) }
 //      result.success(signature)
+    }else if(call.method == "signEd25519NoAuth"){
+      val message = call.argument<String>("message")
+      val uuid = call.argument<String>("uuid")
+      var pub = readData("${uuid}_0_pub")
+      var priv = readData("${uuid}_0_priv")
+      var kp = KeyPair(Key.fromBase64String(pub as String?), Key.fromBase64String(priv as String?))
+      if (message != null) {
+        EdMessage = message
+      }
+      try {
+        var signature = EdMessage?.let { signEd25519(kp, it, lazySodium) }
+        result.success(signature)
+      }catch (e:Exception){
+        result.success(false)
+      }
+
     }else if(call.method == "signRSA"){
       mode = "RSA"
       val uuid = call.argument<String>("uuid")

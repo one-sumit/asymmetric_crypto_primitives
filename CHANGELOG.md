@@ -21,3 +21,9 @@ fixed authentication message for Windows
 
 ## 0.4.2
 changed keys to url safe base64
+
+## 0.4.3
+added `signEd25519NoAuth` method to support signing messages without authentication (e.g. for some automation) for Android and Windows.
+
+## 0.4.4
+added dependency on new version of `nacl_win`

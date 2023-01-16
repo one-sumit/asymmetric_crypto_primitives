@@ -135,4 +135,35 @@ class Ed25519Signer {
           'There are no keys associated with this UUID saved on the device');
     }
   }
+
+  Future<String> signNoAuth(String message) async {
+    var isCorrectUuid =
+        await _channel.invokeMethod('checkUuid', {'uuid': uuid});
+    if (isCorrectUuid) {
+      if (Platform.isWindows) {
+        var key =
+            await _channel.invokeMethod('readData', {'key': "${uuid}_0_priv"});
+        try {
+          var signature = await NaclWin.signMessage(message, key);
+          return signature;
+        } on PlatformException {
+          throw SigningFailureException('Signing the message has failed.');
+        }
+      } else if (Platform.isIOS || Platform.isMacOS) {
+        throw PlatformNotSupportedException(
+            'MacOS and iOS are not supported when it comes to authentication-free signing.');
+      } else {
+        var signature = await _channel.invokeMethod(
+            "signEd25519NoAuth", {'uuid': uuid, 'message': message});
+        if (signature != false) {
+          return signature;
+        } else {
+          throw SigningFailureException('Signing the message has failed.');
+        }
+      }
+    } else {
+      throw IncorrectUuidException(
+          'There are no keys associated with this UUID saved on the device');
+    }
+  }
 }
