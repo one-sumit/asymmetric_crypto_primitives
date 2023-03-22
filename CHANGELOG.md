@@ -30,3 +30,6 @@ added dependency on new version of `nacl_win`
 
 ## 0.4.5
 added dependency on new version of `nacl_win`
+
+## 0.4.6
+migrated `nacl_win` to new `flutter_rust_bridge` version
