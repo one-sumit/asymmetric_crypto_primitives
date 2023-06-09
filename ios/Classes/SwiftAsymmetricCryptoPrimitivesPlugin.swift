@@ -253,8 +253,8 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
             if self.context.canEvaluatePolicy(LAPolicy.deviceOwnerAuthentication, error: &error) {
                 context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Please authenticate to prove your identity") { [weak self] (success, error) in
                     if success {
-                        let signature = sodium.sign.signature(message: data.bytes, secretKey: sodium.utils.base642bin(secretKey as! String)!)!
-                        result(sodium.utils.bin2hex(signature)!)
+                        let signature = self.sodium.sign.signature(message: data.bytes, secretKey: self.sodium.utils.base642bin(secretKey as! String)!)!
+                        result(self.sodium.utils.bin2hex(signature)!)
                     } else {
                         result(false)
                     }
