@@ -74,6 +74,8 @@ class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, Activi
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     if(call.method == "signEd25519"){
       mode = "Ed25519"
+      val prompt = call.argument<String>("prompt")
+      val subPrompt = call.argument<String>("subPrompt")
       val message = call.argument<String>("message")
       val uuid = call.argument<String>("uuid")
       var pub = readData("${uuid}_0_pub")
@@ -87,8 +89,8 @@ class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, Activi
       if (uuid != null) {
         this.resultUuid = uuid
       }
-      val intent: Intent? = keyguardManager.createConfirmDeviceCredentialIntent("Keystore Sign And Verify",
-        "In order to sign the data you need to confirm your identity. Please enter your pin/pattern or scan your fingerprint")
+      val intent: Intent? = keyguardManager.createConfirmDeviceCredentialIntent(prompt,
+        subPrompt)
       if (intent != null) {
         activity.startActivityForResult(intent, REQUEST_CODE_FOR_CREDENTIALS)
       }

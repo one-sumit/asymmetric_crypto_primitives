@@ -37,8 +37,10 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     case "signEd25519":
         let args = call.arguments as? Dictionary<String, Any>
         let uuid = (args!["uuid"] as? String)!
+        let prompt = (args!["prompt"] as? String)!
+        let subPrompt = (args!["subPrompt"] as? String)!
         let dataToSign = (args!["message"] as? String)!
-        signEd25519(data: dataToSign, uuid: uuid, result: result)
+        signEd25519(data: dataToSign, uuid: uuid, prompt: prompt, subPrompt: subPrompt, result: result)
         break
     case "rotateForEd25519":
         let args = call.arguments as? Dictionary<String, Any>
@@ -125,7 +127,7 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         try! storeKeychain(username: "\(uuid)_1_priv", password: encryptedPriv)
     }
     
-    public func signEd25519(data: String, uuid: String, result: @escaping FlutterResult) -> Void{
+    public func signEd25519(data: String, uuid: String, prompt: String, subPrompt: String, result: @escaping FlutterResult) -> Void{
         let secretKey = try? retrieveKeychain(username: "\(uuid)_0_priv")
         if(secretKey == nil){
             result(false)
@@ -133,7 +135,7 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         var error: NSError?
         DispatchQueue.main.async { [self] in
             if self.context.canEvaluatePolicy(LAPolicy.deviceOwnerAuthentication, error: &error) {
-                context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Please authenticate to prove your identity") { [weak self] (success, error) in
+                context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: prompt) { [weak self] (success, error) in
                     if success {
                         let signature = self!.sodium.sign.signature(message: data.bytes, secretKey: self!.sodium.utils.base642bin(secretKey as! String)!)
                         if(signature != nil){

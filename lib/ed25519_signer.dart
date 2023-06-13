@@ -100,7 +100,7 @@ class Ed25519Signer {
   }
 
   ///Signs provided message using Ed25519. Returns signature if successfully signed.
-  Future<String> sign(String message) async {
+  Future<String> sign(String message, String prompt, String subPrompt) async {
     var isCorrectUuid =
         await _channel.invokeMethod('checkUuid', {'uuid': uuid});
     if (isCorrectUuid) {
@@ -122,8 +122,12 @@ class Ed25519Signer {
           throw SigningFailureException('Signing the message has failed.');
         }
       } else {
-        var signature = await _channel
-            .invokeMethod("signEd25519", {'uuid': uuid, 'message': message});
+        var signature = await _channel.invokeMethod("signEd25519", {
+          'uuid': uuid,
+          'message': message,
+          'prompt': prompt,
+          'subPrompt': subPrompt
+        });
         if (signature != false) {
           return signature;
         } else {
