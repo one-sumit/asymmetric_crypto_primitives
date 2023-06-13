@@ -132,10 +132,11 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         if(secretKey == nil){
             result(false)
         }
+        let localAuthContext = LAContext()
         var error: NSError?
         DispatchQueue.main.async { [self] in
-            if self.context.canEvaluatePolicy(LAPolicy.deviceOwnerAuthentication, error: &error) {
-                context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: prompt) { [weak self] (success, error) in
+            if localAuthContext.canEvaluatePolicy(LAPolicy.deviceOwnerAuthentication, error: &error) {
+                localAuthContext.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: prompt) { [weak self] (success, error) in
                     if success {
                         let signature = self!.sodium.sign.signature(message: data.bytes, secretKey: self!.sodium.utils.base642bin(secretKey as! String)!)
                         if(signature != nil){

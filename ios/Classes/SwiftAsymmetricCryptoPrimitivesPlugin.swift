@@ -251,9 +251,10 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
     public func signEd25519(data: String, uuid: String, prompt: String, subPrompt: String, result: @escaping FlutterResult) -> Void{
         let secretKey = readData(key: "\(uuid)_0_priv")
         var error: NSError?
+        let localAuthContext = LAContext()
         DispatchQueue.main.async { [self] in
-            if self.context.canEvaluatePolicy(LAPolicy.deviceOwnerAuthentication, error: &error) {
-                context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: prompt) { [weak self] (success, error) in
+            if localAuthContext.canEvaluatePolicy(LAPolicy.deviceOwnerAuthentication, error: &error) {
+                localAuthContext.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: prompt) { [weak self] (success, error) in
                     if success {
                         let signature = self!.sodium.sign.signature(message: data.bytes, secretKey: self!.sodium.utils.base642bin(secretKey as! String)!)!
                         result(self!.sodium.utils.bin2hex(signature)!)
