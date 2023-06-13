@@ -42,6 +42,12 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         let dataToSign = (args!["message"] as? String)!
         signEd25519(data: dataToSign, uuid: uuid, prompt: prompt, subPrompt: subPrompt, result: result)
         break
+    case "signEd25519NoAuth":
+        let args = call.arguments as? Dictionary<String, Any>
+        let uuid = (args!["uuid"] as? String)!
+        let dataToSign = (args!["message"] as? String)!
+        signEd25519NoAuth(data: dataToSign, uuid: uuid, result: result)
+        break
     case "rotateForEd25519":
         let args = call.arguments as? Dictionary<String, Any>
         let uuid = (args!["uuid"] as? String)!
@@ -153,6 +159,21 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
             }
         }
     }
+
+    public func signEd25519NoAuth(data: String, uuid: String, result: @escaping FlutterResult) -> Void{
+        let secretKey = try? retrieveKeychain(username: "\(uuid)_0_priv")
+        if(secretKey == nil){
+            result(false)
+        }
+        let signature = self!.sodium.sign.signature(message: data.bytes, secretKey: self!.sodium.utils.base642bin(secretKey as! String)!)
+        if(signature != nil){
+            result(self!.sodium.utils.bin2hex(signature!)!)
+        }else{
+            result(false)
+        }
+                
+    }
+    
     
     ///------------------------------------------------------------Side functions------------------------------------------------------------
     public func readData(key: String) -> Any{

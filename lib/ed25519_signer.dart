@@ -153,7 +153,7 @@ class Ed25519Signer {
         } on PlatformException {
           throw SigningFailureException('Signing the message has failed.');
         }
-      } else if (Platform.isIOS || Platform.isMacOS) {
+      } else if (Platform.isMacOS) {
         throw PlatformNotSupportedException(
             'MacOS and iOS are not supported when it comes to authentication-free signing.');
       } else {

@@ -107,6 +107,15 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
           } else {
               result(false)
           }
+      case "signEd25519NoAuth":
+          let args = call.arguments as? Dictionary<String, Any>
+          let uuid = (args!["uuid"] as? String)!
+          let dataToSign = (args!["message"] as? String)!
+          if #available(iOS 13.0.0, *) {
+              signEd25519NoAuth(data: dataToSign, uuid: uuid, result: result)
+          } else {
+              result(false)
+          }
       case "rotateForEd25519":
           let args = call.arguments as? Dictionary<String, Any>
           let uuid = (args!["uuid"] as? String)!
@@ -268,7 +277,16 @@ public class SwiftAsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         }
     }
     
-    
+    @available(iOS 13.0.0, *)
+    public func signEd25519NoAuth(data: String, uuid: String, result: @escaping FlutterResult) -> Void{
+        let secretKey = readData(key: "\(uuid)_0_priv")
+        var error: NSError?
+        let localAuthContext = LAContext()
+        DispatchQueue.main.async { [self] in
+            let signature = self!.sodium.sign.signature(message: data.bytes, secretKey: self!.sodium.utils.base642bin(secretKey as! String)!)!
+            result(self!.sodium.utils.bin2hex(signature)!)
+        }
+    }
     
     ///RSA KEYS
     public func createRSAKey(name: String, requiresBiometry: Bool = true){
