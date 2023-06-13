@@ -165,9 +165,9 @@ public class AsymmetricCryptoPrimitivesPlugin: NSObject, FlutterPlugin {
         if(secretKey == nil){
             result(false)
         }
-        let signature = self!.sodium.sign.signature(message: data.bytes, secretKey: self!.sodium.utils.base642bin(secretKey as! String)!)
+        let signature = sodium.sign.signature(message: data.bytes, secretKey: sodium.utils.base642bin(secretKey as! String)!)
         if(signature != nil){
-            result(self!.sodium.utils.bin2hex(signature!)!)
+            result(sodium.utils.bin2hex(signature!)!)
         }else{
             result(false)
         }
