@@ -111,7 +111,7 @@ class Ed25519Signer {
         try {
           final bool didAuthenticate = await auth.authenticate(
               localizedReason: 'Please authenticate to sign the message',
-              options: const AuthenticationOptions(useErrorDialogs: false));
+              options: const AuthenticationOptions(useErrorDialogs: false,stickyAuth: true, biometricOnly: false));
           if (didAuthenticate) {
             var signature = await NaclWin.signMessage(message, key);
             return signature;
