@@ -13,7 +13,6 @@ dependencies:
   plugin_platform_interface: ^2.0.2
   uuid: ^3.0.6
   local_auth: ^2.1.2
-  nacl_win: ^0.1.0
 
 dev_dependencies:
   flutter_test:

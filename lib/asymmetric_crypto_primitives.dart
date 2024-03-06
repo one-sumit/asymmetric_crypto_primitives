@@ -1,8 +1,6 @@
 import 'package:asymmetric_crypto_primitives/rsa_signer.dart';
 import 'package:flutter/services.dart';
-import 'package:nacl_win/bridge_generated.dart';
 import 'package:uuid/uuid.dart';
-import 'package:nacl_win/nacl_win.dart';
 import 'dart:io';
 
 import 'ed25519_signer.dart';
@@ -15,25 +13,14 @@ class AsymmetricCryptoPrimitives {
   ///Initializes the Ed25519 signer object, which will allow the user to generate keys,
   ///rotate them and delete them.
   static Future<Ed25519Signer> establishForEd25519() async {
-    if (Platform.isWindows) {
+    var isDeviceSecure = await checkIfDeviceSecure();
+    if (isDeviceSecure) {
       String uuid = const Uuid().v4().toString();
-      EdKeyPair keyPair0 = await NaclWin.generateKey();
-      await writeData("${uuid}_0_pub", keyPair0.pubKey);
-      await writeData("${uuid}_0_priv", keyPair0.privKey);
-      EdKeyPair keyPair1 = await NaclWin.generateKey();
-      await writeData("${uuid}_1_pub", keyPair1.pubKey);
-      await writeData("${uuid}_1_priv", keyPair1.privKey);
+      await _channel.invokeMethod('establishForEd25519', {'uuid': uuid});
       return Ed25519Signer(uuid);
     } else {
-      var isDeviceSecure = await checkIfDeviceSecure();
-      if (isDeviceSecure) {
-        String uuid = const Uuid().v4().toString();
-        await _channel.invokeMethod('establishForEd25519', {'uuid': uuid});
-        return Ed25519Signer(uuid);
-      } else {
-        throw DeviceNotSecuredException(
-            'Secure lock on this device is not set up. Consider setting a pin or pattern.');
-      }
+      throw DeviceNotSecuredException(
+          'Secure lock on this device is not set up. Consider setting a pin or pattern.');
     }
   }
 
