@@ -26,6 +26,7 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 31
+    namespace "com.thclab.asymmetric_crypto_primitives"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
