@@ -33,6 +33,7 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 import javax.security.auth.x500.X500Principal
 import kotlin.properties.Delegates
+import android.util.Log
 
 /** AsymmetricCryptoPrimitivesPlugin */
 class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.ActivityResultListener  {
@@ -551,7 +552,7 @@ class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, Activi
   }
 
   override fun onDetachedFromActivity() {
-    Log.d(TAG, "onDetachedFromActivity")
+    Log.d("TAG", "onDetachedFromActivity")
   }
 
   //FUNCTION TO CATCH AUTHENTICATION RESULT
