@@ -551,7 +551,6 @@ class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, Activi
   }
 
   override fun onDetachedFromActivity() {
-    return null
   }
 
   //FUNCTION TO CATCH AUTHENTICATION RESULT
