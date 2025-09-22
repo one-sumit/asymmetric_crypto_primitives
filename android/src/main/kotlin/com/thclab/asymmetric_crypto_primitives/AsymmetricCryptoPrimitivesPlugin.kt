@@ -8,6 +8,7 @@ import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.NonNull
 import androidx.annotation.RequiresApi
@@ -543,11 +544,11 @@ class AsymmetricCryptoPrimitivesPlugin: FlutterPlugin, MethodCallHandler, Activi
   }
 
   override fun onDetachedFromActivityForConfigChanges() {
-    TODO("Not yet implemented")
+    Log.d("AsymmetricCryptoPrimitives", "onDetachedFromActivityForConfigChanges called - not implemented")
   }
 
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-    TODO("Not yet implemented")
+    Log.d("AsymmetricCryptoPrimitives", "onReattachedToActivityForConfigChanges called - not implemented")
   }
 
   override fun onDetachedFromActivity() {
